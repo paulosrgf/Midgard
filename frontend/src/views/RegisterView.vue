@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
+import bgImage from '../assets/midgard-bg.jpg'
 
 const router = useRouter()
 
@@ -17,10 +18,8 @@ const errorMessage = ref('')
 const handleRegister = async () => {
   try {
     errorMessage.value = ''
-
     const response = await api.post('/register', form.value)
-
-    localStorage.setItem('token', response.data.token)
+    localStorage.setItem('token', response.data.access_token)
     router.push('/')
   } catch (error) {
     if (error.response && error.response.data.errors) {
@@ -34,64 +33,93 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100">
-    <div class="w-full max-w-sm p-8 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl">
-      <h2 class="text-3xl font-bold text-center mb-8">Criar Conta</h2>
+  <div class="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+    <div
+      class="flex w-full max-w-[850px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden border border-zinc-800"
+    >
+      <!-- Lado Esquerdo: Imagem Local (Oculta no mobile) -->
+      <div class="hidden md:block w-1/2">
+        <img :src="bgImage" alt="Midgard Atmosphere" class="w-full h-full object-cover" />
+      </div>
 
-      <form @submit.prevent="handleRegister" class="space-y-5">
-        <div class="flex flex-col space-y-1">
-          <label class="text-sm font-medium text-zinc-400">Nome</label>
-          <input
-            type="text"
-            v-model="form.name"
-            required
-            class="px-4 py-2 bg-zinc-950 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          />
+      <!-- Lado Direito: Formulário de Registro -->
+      <div class="w-full md:w-1/2 p-10 flex flex-col justify-center">
+        <div class="flex flex-col items-center">
+          <h1 class="text-zinc-100 text-4xl mb-6 font-serif italic tracking-wider">Midgard</h1>
+          <p class="text-zinc-400 text-sm mb-6 text-center">
+            Crie sua conta para ver os mundos de seus amigos.
+          </p>
+
+          <form @submit.prevent="handleRegister" class="w-full flex flex-col gap-3">
+            <div>
+              <input
+                type="text"
+                v-model="form.name"
+                required
+                placeholder="Nome completo"
+                class="w-full bg-zinc-950/50 border border-zinc-700 text-zinc-200 text-sm p-2.5 rounded-lg focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder-zinc-500"
+              />
+            </div>
+
+            <div>
+              <input
+                type="text"
+                v-model="form.username"
+                required
+                placeholder="Nome de usuário"
+                class="w-full bg-zinc-950/50 border border-zinc-700 text-zinc-200 text-sm p-2.5 rounded-lg focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder-zinc-500"
+              />
+            </div>
+
+            <div>
+              <input
+                type="email"
+                v-model="form.email"
+                required
+                placeholder="Email"
+                class="w-full bg-zinc-950/50 border border-zinc-700 text-zinc-200 text-sm p-2.5 rounded-lg focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder-zinc-500"
+              />
+            </div>
+
+            <div>
+              <input
+                type="password"
+                v-model="form.password"
+                required
+                minlength="8"
+                placeholder="Senha"
+                class="w-full bg-zinc-950/50 border border-zinc-700 text-zinc-200 text-sm p-2.5 rounded-lg focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder-zinc-500"
+              />
+            </div>
+
+            <div
+              v-if="errorMessage"
+              class="text-red-400 text-sm text-center bg-red-950/30 p-2 rounded border border-red-900 mt-1"
+            >
+              {{ errorMessage }}
+            </div>
+
+            <button
+              type="submit"
+              class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm py-2.5 rounded-lg mt-2 transition-colors shadow-lg shadow-indigo-900/20"
+            >
+              Cadastrar
+            </button>
+          </form>
         </div>
 
-        <div class="flex flex-col space-y-1">
-          <label class="text-sm font-medium text-zinc-400">Username</label>
-          <input
-            type="text"
-            v-model="form.username"
-            required
-            class="px-4 py-2 bg-zinc-950 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          />
+        <div class="mt-6 pt-5 border-t border-zinc-800 text-center">
+          <p class="text-sm text-zinc-400">
+            Já tem uma conta?
+            <RouterLink
+              to="/login"
+              class="text-indigo-400 font-medium hover:text-indigo-300 transition-colors"
+            >
+              Conecte-se
+            </RouterLink>
+          </p>
         </div>
-
-        <div class="flex flex-col space-y-1">
-          <label class="text-sm font-medium text-zinc-400">Email</label>
-          <input
-            type="email"
-            v-model="form.email"
-            required
-            class="px-4 py-2 bg-zinc-950 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          />
-        </div>
-
-        <div class="flex flex-col space-y-1">
-          <label class="text-sm font-medium text-zinc-400">Senha</label>
-          <input
-            type="password"
-            v-model="form.password"
-            required
-            minlength="8"
-            class="px-4 py-2 bg-zinc-950 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          />
-        </div>
-
-        <!-- Mensagem de erro elegante -->
-        <div v-if="errorMessage" class="p-3 bg-red-500/10 border border-red-500/50 rounded-lg">
-          <p class="text-sm text-red-400 text-center">{{ errorMessage }}</p>
-        </div>
-
-        <button
-          type="submit"
-          class="w-full py-2.5 mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md transition-colors"
-        >
-          Cadastrar
-        </button>
-      </form>
+      </div>
     </div>
   </div>
 </template>

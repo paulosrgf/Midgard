@@ -3,8 +3,11 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 import bgImage from '../assets/midgard-bg.jpg'
+import { useAuthStore } from '../stores/auth' // 1. Importe a store
 
 const router = useRouter()
+const authStore = useAuthStore() // 2. Inicialize a store
+
 const form = ref({
   email: '',
   password: '',
@@ -15,7 +18,10 @@ const handleLogin = async () => {
   try {
     errorMessage.value = ''
     const response = await api.post('/login', form.value)
-    localStorage.setItem('token', response.data.access_token)
+
+    // 3. SUBSTITUA o localStorage por isso aqui:
+    authStore.setToken(response.data.access_token)
+
     router.push('/')
   } catch (error) {
     if (error.response && error.response.status === 422) {

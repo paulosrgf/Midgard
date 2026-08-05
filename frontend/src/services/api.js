@@ -1,8 +1,17 @@
 import axios from 'axios'
 
 const api = axios.create({
-  // O Vite expõe as variáveis de ambiente usando import.meta.env
-  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+  // URL base do seu container Laravel
+  baseURL: 'http://localhost:8000/api',
+})
+
+// O Interceptor: Antes de qualquer requisição sair, ele cola o token no cabeçalho
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
 })
 
 export default api

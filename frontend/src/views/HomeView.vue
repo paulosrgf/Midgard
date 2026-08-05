@@ -1,15 +1,15 @@
 <script setup>
 import { ref } from 'vue'
+import MidgardLogo from '../components/MidgardLogo.vue'
 
-// Dados estáticos temporários para montarmos o visual do feed
 const posts = ref([
   {
     id: 1,
     author: {
-      username: 'dev_ops_master',
+      username: 'gulosinho',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop',
     },
-    // Imagem em formato vertical para encaixar perfeitamente no mobile
+
     image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600&h=1067&fit=crop',
     likes: 142,
     caption: 'Configurando os novos containers do projeto. 🚀',
@@ -31,9 +31,10 @@ const posts = ref([
 
 <template>
   <div class="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col md:flex-row">
-    <!-- Navegação Lateral (Desktop) -->
     <nav class="hidden md:flex flex-col w-64 border-r border-zinc-800 p-6 sticky top-0 h-screen">
-      <h1 class="text-3xl font-serif italic tracking-wider mb-10">Midgard</h1>
+      <div class="mb-10">
+        <MidgardLogo />
+      </div>
 
       <div class="flex flex-col gap-6 text-zinc-300">
         <a

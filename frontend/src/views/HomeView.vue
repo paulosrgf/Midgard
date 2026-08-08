@@ -1,45 +1,61 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router' // Adicione isso
-import { useAuthStore } from '../stores/auth' // Adicione isso
+import { ref, onMounted } from 'vue' // 1. Adicionamos onMounted
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
+import api from '../services/api' // 2. Importamos o Axios para fazer as requisições
 import MidgardLogo from '../components/MidgardLogo.vue'
 import PostCard from '../components/PostCard.vue'
+import CreatePostModal from '../components/CreatePostModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const isCreateModalOpen = ref(false)
 
-// Função que será chamada ao clicar em Sair
-const handleLogout = () => {
-  authStore.logout()
-  router.push('/login') // Joga o usuário de volta para a tela de login
+// 3. Deixamos a lista de posts vazia, pois ela virá do banco de dados
+const posts = ref([])
+
+// 4. Função para buscar os posts reais do Laravel
+const fetchPosts = async () => {
+  try {
+    const response = await api.get('/posts') // Faz um GET na rota do backend
+    posts.value = response.data
+  } catch (error) {
+    console.error('Erro ao buscar os posts:', error)
+  }
 }
 
-const posts = ref([
-  {
-    id: 1,
-    author: {
-      username: 'gulosinho',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop',
-    },
-    image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600&h=1067&fit=crop',
-    likes: 142,
-    caption: 'Configurando os novos containers do projeto. 🚀',
-    comments: 12,
-  },
-  {
-    id: 2,
-    author: {
-      username: 'cyber_night',
-      avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&h=150&fit=crop',
-    },
-    image: 'https://images.unsplash.com/photo-1507146426996-ef05306b995a?w=600&h=1067&fit=crop',
-    likes: 89,
-    caption: 'Análise de logs da madrugada concluída.',
-    comments: 5,
-  },
-])
+// 5. Função que recebe os dados do modal e ENVIA para o backend
+const handlePostSubmit = async (postData) => {
+  try {
+    // Para enviar imagens, precisamos envelopar os dados em um FormData
+    const formData = new FormData()
+    formData.append('image', postData.image)
+    if (postData.caption) {
+      formData.append('caption', postData.caption)
+    }
 
-// Dados Mockados para os Mundos (Stories)
+    // Faz um POST enviando a imagem
+    await api.post('/posts', formData)
+
+    // Depois de salvar com sucesso, atualizamos a lista de posts para a nova foto aparecer!
+    await fetchPosts()
+  } catch (error) {
+    console.error('Erro ao criar postagem:', error)
+    alert('Ocorreu um erro ao publicar.')
+  }
+}
+
+const handleLogout = () => {
+  authStore.logout()
+  router.push('/login')
+}
+
+// 6. Assim que a tela abrir, ele dispara a busca no banco
+onMounted(() => {
+  fetchPosts()
+})
+
+// Dados Mockados para os Mundos (Stories) e Sugestões (mantemos igual por enquanto)
 const stories = ref([
   {
     id: 1,
@@ -61,19 +77,8 @@ const stories = ref([
     username: 'meteor_rider',
     avatar: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=150&h=150&fit=crop',
   },
-  {
-    id: 5,
-    username: 'curucaca_vibes',
-    avatar: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=150&h=150&fit=crop',
-  },
-  {
-    id: 6,
-    username: 'polokkz',
-    avatar: 'https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=150&h=150&fit=crop',
-  },
 ])
 
-// Dados Mockados para Sugestões
 const suggestions = ref([
   {
     id: 1,
@@ -87,19 +92,13 @@ const suggestions = ref([
     relation: 'Sugerido para você',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop',
   },
-  {
-    id: 3,
-    username: 'backend_guru',
-    relation: 'Segue você',
-    avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&h=150&fit=crop',
-  },
 ])
 </script>
 
 <template>
-  <div class="min-h-screen bg-zinc-950 text-zinc-100 flex justify-center">
+  <div class="min-h-screen bg-zinc-950 text-zinc-100 flex justify-center relative">
     <div class="w-full max-w-[1200px] flex flex-col md:flex-row justify-between">
-      <!-- 1. Navegação Lateral Esquerda (Desktop) REDESENHADA -->
+      <!-- 1. Navegação Lateral Esquerda (Desktop) -->
       <nav
         class="hidden md:flex flex-col w-[240px] xl:w-[260px] border-r border-zinc-900 p-4 sticky top-0 h-screen shrink-0 justify-between"
       >
@@ -109,9 +108,8 @@ const suggestions = ref([
             <MidgardLogo />
           </div>
 
-          <!-- Links de Navegação com estilo "Pill" -->
+          <!-- Links de Navegação -->
           <div class="flex flex-col gap-1 text-zinc-200">
-            <!-- Item Ativo (Página Inicial) -->
             <a
               href="#"
               class="group flex items-center gap-4 p-3 rounded-lg bg-zinc-900 text-white transition-colors"
@@ -131,7 +129,6 @@ const suggestions = ref([
               <span class="text-[15px] font-bold">Página Inicial</span>
             </a>
 
-            <!-- Demais Itens -->
             <a
               href="#"
               class="group flex items-center gap-4 p-3 rounded-lg hover:bg-zinc-900/60 transition-colors"
@@ -170,8 +167,10 @@ const suggestions = ref([
               <span class="text-[15px] font-medium group-hover:text-white">Notificações</span>
             </a>
 
+            <!-- Botão Criar -->
             <a
               href="#"
+              @click.prevent="isCreateModalOpen = true"
               class="group flex items-center gap-4 p-3 rounded-lg hover:bg-zinc-900/60 transition-colors"
             >
               <svg
@@ -206,7 +205,6 @@ const suggestions = ref([
           </div>
         </div>
 
-        <!-- Menu "Mais" no rodapé da barra lateral -->
         <!-- Botão de Sair no rodapé da barra lateral -->
         <button
           @click="handleLogout"
@@ -368,5 +366,12 @@ const suggestions = ref([
         </svg>
       </a>
     </nav>
+
+    <!-- Componente do Modal de Criar Post flutuando no fim do DOM -->
+    <CreatePostModal
+      v-if="isCreateModalOpen"
+      @close="isCreateModalOpen = false"
+      @submit="handlePostSubmit"
+    />
   </div>
 </template>

@@ -30,20 +30,17 @@ const router = createRouter({
 })
 
 // O Guarda de Rota: Roda ANTES de cada navegação
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const authStore = useAuthStore()
   const isAuthenticated = authStore.token !== null
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    // Tenta acessar página restrita sem estar logado -> vai pro Login
-    next('/login')
+    return '/login' // Em vez de next(), apenas retornamos o caminho
   } else if (to.meta.requiresGuest && isAuthenticated) {
-    // Tenta acessar login/registro já estando logado -> vai pro Feed
-    next('/')
-  } else {
-    // Tudo certo, pode passar
-    next()
+    return '/'
   }
+
+  // Se não bater em nenhum IF e não retornar nada, o Vue entende que está liberado!
 })
 
 export default router

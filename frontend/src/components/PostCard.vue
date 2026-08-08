@@ -1,11 +1,48 @@
 <script setup>
+import { ref } from 'vue'
+import api from '@/services/api'
+
 // O defineProps diz ao Vue que este componente espera receber um objeto chamado 'post'
-defineProps({
+const props = defineProps({
   post: {
     type: Object,
     required: true,
   },
 })
+
+// Estados reativos locais para gerenciar curtidas e comentários
+const likesCount = ref(props.post.likes)
+const isLiked = ref(props.post.isLiked || false)
+const commentsList = ref(props.post.comments || [])
+const newCommentText = ref('')
+const showCommentsModal = ref(false) // Opcional caso queira expandir os comentários
+
+// Função para Curtir / Descurtir
+const toggleLike = async () => {
+  try {
+    const response = await api.post(`/posts/${props.post.id}/like`)
+    likesCount.value = response.data.likes_count
+    isLiked.value = response.data.liked
+  } catch (error) {
+    console.error('Erro ao curtir postagem:', error)
+  }
+}
+
+// Função para Adicionar Comentário
+const addComment = async () => {
+  if (!newCommentText.value.trim()) return
+
+  try {
+    const response = await api.post(`/posts/${props.post.id}/comments`, {
+      body: newCommentText.value,
+    })
+    // Adiciona o comentário recém-criado no topo da lista
+    commentsList.value.unshift(response.data)
+    newCommentText.value = ''
+  } catch (error) {
+    console.error('Erro ao comentar:', error)
+  }
+}
 </script>
 
 <template>
@@ -32,31 +69,44 @@ defineProps({
 
     <!-- Ações do Post (Like, Comment) -->
     <div class="flex items-center gap-4 mt-3 px-2 md:px-0">
-      <button class="hover:text-zinc-400 transition-colors">
-        <!-- Ícone de Coração -->
+      <!-- Botão de Curtir -->
+      <button
+        @click="toggleLike"
+        class="transition-colors focus:outline-none"
+        :class="isLiked ? 'text-red-500 hover:text-red-400' : 'hover:text-zinc-400'"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
           height="24"
-          fill="currentColor"
-          viewBox="0 0 16 16"
+          :fill="isLiked ? 'currentColor' : 'none'"
+          stroke="currentColor"
+          stroke-width="1.5"
+          viewBox="0 0 24 24"
         >
           <path
-            d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
           />
         </svg>
       </button>
+
+      <!-- Ícone de Balão de Comentário -->
       <button class="hover:text-zinc-400 transition-colors">
-        <!-- Ícone de Balão de Comentário -->
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
           height="24"
-          fill="currentColor"
-          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          viewBox="0 0 24 24"
         >
           <path
-            d="M2.678 11.894a1 1 0 0 1 .287.801 11 11 0 0 1-.398 2c1.395-.323 2.247-.697 2.634-.893a1 1 0 0 1 .71-.074A8 8 0 0 0 8 14c3.996 0 7-2.807 7-6s-3.004-6-7-6-7 2.808-7 6c0 1.468.617 2.83 1.678 3.894m-.493 3.905a22 22 0 0 1-.713.129c-.2.032-.352-.176-.273-.362a10 10 0 0 0 .244-.637l.003-.01c.248-.72.35-1.548.31-2.316-1.52-1.21-2.45-2.82-2.45-4.504C0 3.738 3.582 1 8 1s8 2.738 8 5-3.582 5-8 5c-1.44 0-2.806-.277-4.009-.776a17 17 0 0 1-1.785.672Q2.735 15.423 2.185 15.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A7.596 7.596 0 0012 20.25z"
           />
         </svg>
       </button>
@@ -64,14 +114,43 @@ defineProps({
 
     <!-- Likes e Legenda -->
     <div class="mt-2 px-2 md:px-0">
-      <p class="text-sm font-semibold mb-1">{{ post.likes }} curtidas</p>
+      <p class="text-sm font-semibold mb-1">{{ likesCount }} curtidas</p>
       <p class="text-sm">
         <span class="font-semibold mr-2">{{ post.author.username }}</span>
         <span class="text-zinc-300">{{ post.caption }}</span>
       </p>
-      <p class="text-zinc-500 text-sm mt-1 cursor-pointer">
-        Ver todos os {{ post.comments }} comentários
+
+      <!-- Seção de Comentários Existentes -->
+      <div class="mt-2 space-y-1 max-h-32 overflow-y-auto">
+        <p v-for="comment in commentsList" :key="comment.id" class="text-sm">
+          <span class="font-semibold mr-2 text-zinc-200">{{ comment.username }}</span>
+          <span class="text-zinc-400">{{ comment.body }}</span>
+        </p>
+      </div>
+
+      <p v-if="commentsList.length === 0" class="text-zinc-500 text-sm mt-1">
+        Nenhum comentário ainda. Seja o primeiro!
       </p>
+
+      <!-- Input para Novo Comentário -->
+      <form
+        @submit.prevent="addComment"
+        class="mt-3 flex items-center border-t border-zinc-800 pt-2"
+      >
+        <input
+          v-model="newCommentText"
+          type="text"
+          placeholder="Adicione um comentário..."
+          class="w-full bg-transparent text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none"
+        />
+        <button
+          type="submit"
+          :disabled="!newCommentText.trim()"
+          class="text-sm font-semibold text-sky-500 hover:text-sky-400 disabled:opacity-50 ml-2"
+        >
+          Publicar
+        </button>
+      </form>
     </div>
   </article>
 </template>

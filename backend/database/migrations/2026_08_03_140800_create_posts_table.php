@@ -9,16 +9,17 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::create('posts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('image_path');
-            $table->text('caption')->nullable();
-            $table->timestamps();
-        });
-    }
+    public function up()
+{
+    Schema::create('posts', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Dono do post
+        $table->string('image_path'); // Caminho da imagem salva
+        $table->text('caption')->nullable(); // Legenda
+        $table->integer('likes')->default(0);
+        $table->timestamps();
+    });
+}
 
     /**
      * Reverse the migrations.

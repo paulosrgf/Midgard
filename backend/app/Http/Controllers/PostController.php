@@ -8,25 +8,33 @@ use Illuminate\Http\Request;
 class PostController extends Controller
 {
     // Função que DEVOLVE os posts para o Feed (GET)
-    public function index()
+    public function index(Request $request)
     {
-        // Busca os posts mais recentes, trazendo também os dados do autor (user)
-        $posts = Post::with('user')->latest()->get();
-        
-        // Vamos formatar para o Vue entender perfeitamente
-        $formattedPosts = $posts->map(function ($post) {
+        $posts = Post::with(['user', 'likes', 'comments.user'])->latest()->get();
+        $currentUserId = $request->user() ? $request->user()->id : null;
+
+        $formattedPosts = $posts->map(function ($post) use ($currentUserId) {
+            // Garante que se o usuário dono do post não existir, ele não quebra a aplicação
+            $authorName = $post->user ? ($post->user->name ?? $post->user->username) : 'Usuário Desconhecido';
+            $authorAvatar = $post->user->avatar ?? 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&h=150&fit=crop';
+
             return [
                 'id' => $post->id,
                 'author' => [
-                    'username' => $post->user->username ?? $post->user->name,
-                    // Avatar fixo por enquanto, depois você faz o upload de avatar
-                    'avatar' => 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&h=150&fit=crop',
+                    'username' => $authorName,
+                    'avatar' => $authorAvatar,
                 ],
-                // Monta a URL completa da imagem para o frontend conseguir exibir
                 'image' => asset('storage/' . $post->image_path),
-                'likes' => $post->likes ?? 0,
+                'likes' => $post->likes ? $post->likes->count() : 0,
+                'isLiked' => $currentUserId && $post->likes ? $post->likes->contains('user_id', $currentUserId) : false,
                 'caption' => $post->caption,
-                'comments' => 0,
+                'comments' => $post->comments ? $post->comments->map(function ($comment) {
+                    return [
+                        'id' => $comment->id,
+                        'username' => $comment->user ? ($comment->user->name ?? 'Usuário') : 'Usuário',
+                        'body' => $comment->body
+                    ];
+                }) : [],
             ];
         });
 

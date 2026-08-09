@@ -61,4 +61,22 @@ class PostController extends Controller
 
         return response()->json(['message' => 'Post criado com sucesso!', 'post' => $post], 201);
     }
+    public function destroy(Request $request, $id)
+    {
+        $post = Post::findOrFail($id);
+
+        // Regra do plano: restrito ao próprio autor[cite: 1]
+        if ($request->user()->id !== $post->user_id) {
+            return response()->json(['message' => 'Ação não autorizada.'], 403);
+        }
+
+        // Apaga a imagem do disco
+        if ($post->image_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($post->image_path);
+        }
+
+        $post->delete();
+
+        return response()->json(['message' => 'Postagem excluída com sucesso.']);
+    }
 }

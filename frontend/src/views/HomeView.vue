@@ -35,6 +35,27 @@ const fetchStories = async () => {
   }
 }
 
+const handleStoryUpload = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  try {
+    const formData = new FormData()
+    formData.append('media', file)
+    
+    // Envia a imagem
+    await api.post('/stories', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    
+    // Recarrega a barra de stories para a sua foto aparecer na hora!
+    await fetchStories()
+  } catch (error) {
+    console.error('Erro ao criar story:', error)
+    alert('Erro ao postar o story. Verifique se é uma imagem válida.')
+  }
+}
+
 const handlePostSubmit = async (postData) => {
   try {
     const formData = new FormData()
@@ -138,6 +159,15 @@ const suggestions = ref([
           
           <!-- Mundos (Stories Dinâmicos) -->
           <div class="flex gap-4 overflow-x-auto pb-4 mb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+           <!-- Botão Criar Novo Story -->
+            <label class="flex flex-col items-center gap-1 cursor-pointer shrink-0 group mr-2">
+              <div class="w-16 h-16 rounded-full p-[2px] border-2 border-zinc-700 group-hover:border-zinc-500 transition-colors flex items-center justify-center bg-zinc-900 text-zinc-500 group-hover:text-zinc-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+              </div>
+              <span class="text-xs text-zinc-300 truncate w-16 text-center">Seu story</span>
+              <!-- Input invisível que dispara o upload -->
+              <input type="file" accept="image/*" class="hidden" @change="handleStoryUpload" />
+            </label>
             <div
               v-for="(userGroup, userId) in stories"
               :key="userId"

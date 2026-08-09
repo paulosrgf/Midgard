@@ -2,7 +2,21 @@
 
 namespace App\Http\Controllers;
 
-abstract class Controller
+use OpenApi\Attributes as OA;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Routing\Controller as BaseController;
+
+#[OA\Info(
+    version: "1.0.0",
+    title: "Midgard API",
+    description: "Documentação da API do clone do Instagram"
+)]
+#[OA\Server(
+    url: "http://localhost:8000/api",
+    description: "Servidor Local"
+)]
+class Controller extends BaseController
 {
-    //
+    use AuthorizesRequests, ValidatesRequests;
 }

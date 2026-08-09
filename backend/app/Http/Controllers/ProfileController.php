@@ -5,9 +5,21 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Post;
+use OpenApi\Attributes as OA;
 
 class ProfileController extends Controller
 {
+    #[OA\Get(
+        path: "/profile",
+        summary: "Retorna os dados do perfil logado",
+        tags: ["Perfil"],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Operacao bem sucedida"
+            )
+        ]
+    )]
     public function show(Request $request)
     {
         $user = $request->user();
@@ -29,16 +41,20 @@ class ProfileController extends Controller
                         ];
                     });
 
+        // Busca os destaques do usuario
+        $highlights = \App\Models\Highlight::where('user_id', $user->id)->get();
+
         return response()->json([
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
-                'username' => $user->username ?? 'Usuário',
+                'username' => $user->username ?? 'Usuario',
                 'bio' => $user->bio ?? 'Adicione uma bio...',
                 'avatar' => $user->avatar ? asset('storage/' . $user->avatar) : 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&h=150&fit=crop',
                 'posts_count' => $posts->count(),
             ],
-            'posts' => $posts
+            'posts' => $posts,
+            'highlights' => $highlights
         ]);
     }
 
@@ -70,7 +86,6 @@ class ProfileController extends Controller
                 'posts_count' => $posts->count(),
                 'followers_count' => $targetUser->followers()->count(),
                 'following_count' => $targetUser->following()->count(),
-                // Retorna TRUE se o usuário logado já segue esta pessoa
                 'is_followed_by_me' => $me ? $me->following()->where('followed_id', $targetUser->id)->exists() : false,
             ],
             'posts' => $posts
@@ -81,7 +96,6 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        // Valida os dados, garantindo que o username seja único (exceto para o próprio usuário)
         $request->validate([
             'name' => 'nullable|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
@@ -89,19 +103,15 @@ class ProfileController extends Controller
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        // Atualiza os textos
         if ($request->has('name')) $user->name = $request->name;
         if ($request->has('username')) $user->username = $request->username;
         if ($request->has('bio')) $user->bio = $request->bio;
 
-        // Gerencia o Upload do Avatar
         if ($request->hasFile('avatar')) {
-            // Se já tinha um avatar salvo no storage, deleta o antigo para não lotar o HD
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
             
-            // Salva a nova imagem na pasta public/avatars
             $path = $request->file('avatar')->store('avatars', 'public');
             $user->avatar = $path;
         }

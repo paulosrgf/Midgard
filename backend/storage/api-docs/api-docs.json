@@ -1,0 +1,36 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Midgard API",
+        "description": "Documentação da API do clone do Instagram",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000/api",
+            "description": "Servidor Local"
+        }
+    ],
+    "paths": {
+        "/profile": {
+            "get": {
+                "tags": [
+                    "Perfil"
+                ],
+                "summary": "Retorna os dados do perfil logado",
+                "operationId": "5bb4be46c7974b2c2641a87e3469f86c",
+                "responses": {
+                    "200": {
+                        "description": "Operacao bem sucedida"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Perfil",
+            "description": "Perfil"
+        }
+    ]
+}

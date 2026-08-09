@@ -1,7 +1,7 @@
 # Usamos a imagem oficial do PHP com Apache
 FROM php:8.4-apache
 
-# Instalar dependências do sistema para o Postgres e processamento de imagem (GD)
+# Instalar dependências do sistema
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_pgsql gd
 
-# Habilitar o mod_rewrite do Apache (necessário para as rotas do Laravel)
+# Habilitar o mod_rewrite do Apache
 RUN a2enmod rewrite
 
 # Alterar o DocumentRoot do Apache para a pasta public/ do Laravel
@@ -20,16 +20,36 @@ ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Copiar todos os arquivos do projeto para o container
-COPY . /var/www/html
-
-# Baixar e instalar o Composer
+# Copiar o Composer PRIMEIRO
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Instalar as dependências do Laravel focadas em produção (sem arquivos de dev)
+# Copiar os arquivos do projeto DEPOIS (agora sim o Laravel existe lá dentro)
+COPY . /var/www/html
+
+# Agora podemos instalar as dependências
 RUN composer install --no-dev --optimize-autoloader
 
-# Ajustar permissões das pastas que o Laravel precisa escrever
+# Ajustar permissões das pastas
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# O Apache já expõe a porta 80 por padrão, não precisamos de CMD extra
+# Limpa configurações velhas cacheadas
+RUN php artisan config:clear
+
+# =========================================================================
+# A MÁGICA DO ENTRYPOINT:
+# Escrevemos o script direto no container para evitar erro de permissões
+# =========================================================================
+RUN echo '#!/bin/sh' > /usr/local/bin/entrypoint.sh \
+    && echo 'set -e' >> /usr/local/bin/entrypoint.sh \
+    && echo 'echo "Rodando Migrations..."' >> /usr/local/bin/entrypoint.sh \
+    && echo 'php artisan migrate --force' >> /usr/local/bin/entrypoint.sh \
+    && echo 'echo "Rodando Seeders..."' >> /usr/local/bin/entrypoint.sh \
+    && echo 'php artisan db:seed --force || true' >> /usr/local/bin/entrypoint.sh \
+    && echo 'echo "Iniciando Apache..."' >> /usr/local/bin/entrypoint.sh \
+    && echo 'exec apache2-foreground' >> /usr/local/bin/entrypoint.sh
+
+# Dá permissão de execução pro nosso script
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Força o container a sempre iniciar por este script
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

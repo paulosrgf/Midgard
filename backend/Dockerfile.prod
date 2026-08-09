@@ -1,7 +1,6 @@
-# Usamos a imagem oficial do PHP com Apache
 FROM php:8.4-apache
 
-# Instalar dependências do sistema necessárias para o Postgres e GD
+# Instala dependências do sistema e extensões do Postgres
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -10,31 +9,31 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_pgsql gd
+    && docker-php-ext-install pdo pdo_pgsql gd \
+    && docker-php-ext-enable pdo_pgsql
 
-# Habilitar o mod_rewrite do Apache
+# Habilita o mod_rewrite do Apache
 RUN a2enmod rewrite
 
-# Alterar o DocumentRoot do Apache para a pasta public/ do Laravel
+# Configura o DocumentRoot
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Copiar o Composer
+# Instala o Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copiar os arquivos do projeto
+# Copia os arquivos do projeto
 COPY . /var/www/html
 
-# Instalar as dependências de produção
+# Instala dependências do Composer sem dev
 RUN composer install --no-dev --optimize-autoloader
 
-# Ajustar permissões das pastas que o Laravel precisa escrever
+# Ajusta permissões
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Copiar o script de entrypoint externo e dar permissão de execução
+# Copia e configura o entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Forçar o container a iniciar pelo nosso entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

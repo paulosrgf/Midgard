@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/auth' // Importamos o Pinia
 import HomeView from '../views/HomeView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import LoginView from '../views/LoginView.vue'
+import ProfileView from '../views/ProfileView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,6 +26,11 @@ const router = createRouter({
       name: 'login',
       component: LoginView,
       meta: { requiresGuest: true }, // Apenas para visitantes
+    },
+    {
+      path: '/perfil',
+      name: 'perfil',
+      component: ProfileView,
     },
   ],
 })

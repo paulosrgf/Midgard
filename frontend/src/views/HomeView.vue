@@ -1,8 +1,8 @@
 <script setup>
-import { ref, onMounted } from 'vue' // 1. Adicionamos onMounted
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, RouterLink } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import api from '../services/api' // 2. Importamos o Axios para fazer as requisições
+import api from '../services/api'
 import MidgardLogo from '../components/MidgardLogo.vue'
 import PostCard from '../components/PostCard.vue'
 import CreatePostModal from '../components/CreatePostModal.vue'
@@ -11,33 +11,26 @@ const router = useRouter()
 const authStore = useAuthStore()
 const isCreateModalOpen = ref(false)
 
-// 3. Deixamos a lista de posts vazia, pois ela virá do banco de dados
 const posts = ref([])
 
-// 4. Função para buscar os posts reais do Laravel
 const fetchPosts = async () => {
   try {
-    const response = await api.get('/posts') // Faz um GET na rota do backend
+    const response = await api.get('/posts')
     posts.value = response.data
   } catch (error) {
     console.error('Erro ao buscar os posts:', error)
   }
 }
 
-// 5. Função que recebe os dados do modal e ENVIA para o backend
 const handlePostSubmit = async (postData) => {
   try {
-    // Para enviar imagens, precisamos envelopar os dados em um FormData
     const formData = new FormData()
     formData.append('image', postData.image)
     if (postData.caption) {
       formData.append('caption', postData.caption)
     }
 
-    // Faz um POST enviando a imagem
     await api.post('/posts', formData)
-
-    // Depois de salvar com sucesso, atualizamos a lista de posts para a nova foto aparecer!
     await fetchPosts()
   } catch (error) {
     console.error('Erro ao criar postagem:', error)
@@ -50,12 +43,10 @@ const handleLogout = () => {
   router.push('/login')
 }
 
-// 6. Assim que a tela abrir, ele dispara a busca no banco
 onMounted(() => {
   fetchPosts()
 })
 
-// Dados Mockados para os Mundos (Stories) e Sugestões (mantemos igual por enquanto)
 const stories = ref([
   {
     id: 1,
@@ -110,8 +101,8 @@ const suggestions = ref([
 
           <!-- Links de Navegação -->
           <div class="flex flex-col gap-1 text-zinc-200">
-            <a
-              href="#"
+            <RouterLink
+              to="/"
               class="group flex items-center gap-4 p-3 rounded-lg bg-zinc-900 text-white transition-colors"
             >
               <svg
@@ -127,7 +118,7 @@ const suggestions = ref([
                 <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293z" />
               </svg>
               <span class="text-[15px] font-bold">Página Inicial</span>
-            </a>
+            </RouterLink>
 
             <a
               href="#"
@@ -191,8 +182,9 @@ const suggestions = ref([
               <span class="text-[15px] font-medium group-hover:text-white">Criar</span>
             </a>
 
-            <a
-              href="#"
+            <!-- Botão Perfil usando RouterLink -->
+            <RouterLink
+              to="/perfil"
               class="group flex items-center gap-4 p-3 rounded-lg hover:bg-zinc-900/60 transition-colors"
             >
               <img
@@ -201,7 +193,7 @@ const suggestions = ref([
                 class="w-6 h-6 rounded-full object-cover border border-zinc-700 group-hover:scale-105 transition-transform"
               />
               <span class="text-[15px] font-medium group-hover:text-white">Perfil</span>
-            </a>
+            </RouterLink>
           </div>
         </div>
 
@@ -327,7 +319,7 @@ const suggestions = ref([
     <nav
       class="md:hidden fixed bottom-0 w-full bg-zinc-950 border-t border-zinc-900 flex justify-around p-3 z-50"
     >
-      <a href="#" class="text-white">
+      <RouterLink to="/" class="text-white">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -340,7 +332,8 @@ const suggestions = ref([
           />
           <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293z" />
         </svg>
-      </a>
+      </RouterLink>
+
       <a href="#" class="text-zinc-500">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -354,7 +347,9 @@ const suggestions = ref([
           />
         </svg>
       </a>
-      <a href="#" class="text-zinc-500">
+
+      <!-- Botão Perfil Mobile usando RouterLink -->
+      <RouterLink to="/perfil" class="text-zinc-500">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -364,7 +359,7 @@ const suggestions = ref([
         >
           <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
         </svg>
-      </a>
+      </RouterLink>
     </nav>
 
     <!-- Componente do Modal de Criar Post flutuando no fim do DOM -->

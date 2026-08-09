@@ -42,6 +42,41 @@ class ProfileController extends Controller
         ]);
     }
 
+    public function showUser(Request $request, $username)
+    {
+        $targetUser = \App\Models\User::where('username', $username)->firstOrFail();
+        $me = $request->user();
+
+        $posts = Post::where('user_id', $targetUser->id)
+                    ->with(['likes', 'comments'])
+                    ->latest()
+                    ->get()
+                    ->map(function ($post) {
+                        return [
+                            'id' => $post->id,
+                            'image' => asset('storage/' . $post->image_path),
+                            'likes_count' => $post->likes ? $post->likes->count() : 0,
+                            'comments_count' => $post->comments ? $post->comments->count() : 0,
+                        ];
+                    });
+
+        return response()->json([
+            'user' => [
+                'id' => $targetUser->id,
+                'name' => $targetUser->name,
+                'username' => $targetUser->username,
+                'bio' => $targetUser->bio,
+                'avatar' => $targetUser->avatar ? asset('storage/' . $targetUser->avatar) : 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&h=150&fit=crop',
+                'posts_count' => $posts->count(),
+                'followers_count' => $targetUser->followers()->count(),
+                'following_count' => $targetUser->following()->count(),
+                // Retorna TRUE se o usuário logado já segue esta pessoa
+                'is_followed_by_me' => $me ? $me->following()->where('followed_id', $targetUser->id)->exists() : false,
+            ],
+            'posts' => $posts
+        ]);
+    }
+
     public function update(Request $request)
     {
         $user = $request->user();

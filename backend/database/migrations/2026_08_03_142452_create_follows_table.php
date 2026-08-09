@@ -6,27 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-   public function up(): void
+    public function up()
     {
         Schema::create('follows', function (Blueprint $table) {
             $table->id();
-            // Apontamos as duas chaves para a mesma tabela 'users'
             $table->foreignId('follower_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('followed_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
 
-            // Garantimos que a pessoa não siga a mesma conta duas vezes
+            // Regra do plano: combinação seguidor+seguido é única
             $table->unique(['follower_id', 'followed_id']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('follows');
     }

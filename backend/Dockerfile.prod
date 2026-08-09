@@ -32,15 +32,14 @@ RUN composer install --no-dev --optimize-autoloader
 # Ajustar permissões das pastas
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Limpa configurações velhas cacheadas
-RUN php artisan config:clear
-
 # =========================================================================
 # A MÁGICA DO ENTRYPOINT:
-# Escrevemos o script direto no container para evitar erro de permissões
+# O clear e as migrations rodam em runtime (quando o container sobe e lê o env)
 # =========================================================================
 RUN echo '#!/bin/sh' > /usr/local/bin/entrypoint.sh \
     && echo 'set -e' >> /usr/local/bin/entrypoint.sh \
+    && echo 'echo "Limpando cache de config..."' >> /usr/local/bin/entrypoint.sh \
+    && echo 'php artisan config:clear' >> /usr/local/bin/entrypoint.sh \
     && echo 'echo "Rodando Migrations..."' >> /usr/local/bin/entrypoint.sh \
     && echo 'php artisan migrate --force' >> /usr/local/bin/entrypoint.sh \
     && echo 'echo "Rodando Seeders..."' >> /usr/local/bin/entrypoint.sh \

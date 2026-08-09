@@ -54,7 +54,11 @@ const addComment = async () => {
         alt="Avatar"
         class="w-8 h-8 rounded-full object-cover border border-zinc-700"
       />
-      <span class="font-semibold text-sm text-zinc-100">{{ post.author.username }}</span>
+      <RouterLink
+        :to="'/u/' + post.author.username"
+        class="font-semibold text-sm text-zinc-100 hover:underline"
+        >{{ post.author.username }}</RouterLink
+      >
       <span class="text-zinc-500 text-xs">• 2 h</span>
     </div>
 

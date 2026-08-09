@@ -4,6 +4,7 @@ import HomeView from '../views/HomeView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import LoginView from '../views/LoginView.vue'
 import ProfileView from '../views/ProfileView.vue'
+import UserProfileView from '../views/UserProfileView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,6 +32,11 @@ const router = createRouter({
       path: '/perfil',
       name: 'perfil',
       component: ProfileView,
+    },
+    {
+      path: '/u/:username',
+      name: 'user-profile',
+      component: UserProfileView,
     },
   ],
 })

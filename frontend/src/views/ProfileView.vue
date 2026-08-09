@@ -10,7 +10,13 @@ const authStore = useAuthStore()
 const profile = ref(null)
 const loading = ref(true)
 
-// Buscar dados do perfil e posts
+// --- ESTADOS DO MODAL DE EDIÇÃO ---
+const isEditModalOpen = ref(false)
+const editForm = ref({ name: '', username: '', bio: '', avatar: null })
+const avatarPreview = ref(null)
+const isSubmitting = ref(false)
+
+// Buscar dados do perfil
 const fetchProfile = async () => {
   try {
     const response = await api.get('/profile')
@@ -27,6 +33,53 @@ const handleLogout = () => {
   router.push('/login')
 }
 
+// --- LÓGICA DE EDIÇÃO DE PERFIL ---
+const openEditModal = () => {
+  // Preenche o modal com os dados atuais do banco
+  editForm.value.name = profile.value.user.name || ''
+  editForm.value.username = profile.value.user.username || ''
+  editForm.value.bio = profile.value.user.bio || ''
+  editForm.value.avatar = null
+  avatarPreview.value = profile.value.user.avatar
+  isEditModalOpen.value = true
+}
+
+const handleAvatarChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    editForm.value.avatar = file
+    avatarPreview.value = URL.createObjectURL(file) // Mostra a prévia da nova imagem
+  }
+}
+
+const submitProfileEdit = async () => {
+  isSubmitting.value = true
+  try {
+    const formData = new FormData()
+    formData.append('name', editForm.value.name)
+    formData.append('username', editForm.value.username)
+    formData.append('bio', editForm.value.bio)
+
+    if (editForm.value.avatar) {
+      formData.append('avatar', editForm.value.avatar)
+    }
+
+    // Dispara pro nosso novo backend
+    await api.post('/profile', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+
+    // Atualiza a tela com os novos dados recarregando o perfil
+    await fetchProfile()
+    isEditModalOpen.value = false
+  } catch (error) {
+    console.error('Erro ao atualizar perfil:', error)
+    alert(error.response?.data?.message || 'Erro ao atualizar o perfil. Tente outro username.')
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
 onMounted(() => {
   fetchProfile()
 })
@@ -35,7 +88,7 @@ onMounted(() => {
 <template>
   <div class="min-h-screen bg-zinc-950 text-zinc-100 flex justify-center relative">
     <div class="w-full max-w-[1200px] flex flex-col md:flex-row justify-between">
-      <!-- 1. Navegação Lateral Esquerda (Exatamente igual à Home) -->
+      <!-- 1. Navegação Lateral Esquerda -->
       <nav
         class="hidden md:flex flex-col w-[240px] xl:w-[260px] border-r border-zinc-900 p-4 sticky top-0 h-screen shrink-0 justify-between"
       >
@@ -90,7 +143,10 @@ onMounted(() => {
               class="group flex items-center gap-4 p-3 rounded-lg bg-zinc-900 text-white transition-colors"
             >
               <img
-                src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&h=150&fit=crop"
+                :src="
+                  profile?.user?.avatar ||
+                  'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&h=150&fit=crop'
+                "
                 alt="Perfil"
                 class="w-6 h-6 rounded-full object-cover border border-zinc-700"
               />
@@ -133,7 +189,7 @@ onMounted(() => {
       >
         <!-- Header do Perfil -->
         <header class="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-20 mb-12">
-          <!-- Avatar Grande -->
+          <!-- Avatar -->
           <div class="shrink-0 relative">
             <img
               :src="profile.user.avatar"
@@ -143,13 +199,14 @@ onMounted(() => {
           </div>
 
           <div class="flex-1 flex flex-col items-center md:items-start">
-            <!-- Row 1: Username & Ações -->
             <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
               <h1 class="text-xl md:text-2xl font-medium text-zinc-100">
                 {{ profile.user.username }}
               </h1>
               <div class="flex gap-2">
+                <!-- BOTÃO QUE ABRE O MODAL -->
                 <button
+                  @click="openEditModal"
                   class="bg-zinc-800 hover:bg-zinc-700 px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors text-white"
                 >
                   Editar Perfil
@@ -159,40 +216,26 @@ onMounted(() => {
                 >
                   Ver arquivo
                 </button>
-                <button class="p-1.5 hover:text-zinc-400 transition-colors">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    fill="currentColor"
-                    viewBox="0 0 16 16"
-                  >
-                    <path
-                      d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"
-                    />
-                  </svg>
-                </button>
               </div>
             </div>
 
-            <!-- Row 2: Status (Oculto no mobile, mostramos embaixo depois se quiser) -->
             <div class="hidden md:flex gap-10 text-[15px] mb-5 text-zinc-100">
               <p>
                 <span class="font-bold">{{ profile.user.posts_count }}</span> publicações
               </p>
-              <p><span class="font-bold">482</span> seguidores</p>
-              <p><span class="font-bold">294</span> seguindo</p>
+              <p><span class="font-bold">0</span> seguidores</p>
+              <p><span class="font-bold">0</span> seguindo</p>
             </div>
 
-            <!-- Row 3: Bio -->
+            <!-- Exibindo nome e bio reais -->
             <div class="text-[15px] text-center md:text-left">
-              <p class="font-semibold text-zinc-100 mb-0.5">{{ profile.user.username }}</p>
-              <p class="text-zinc-400 whitespace-pre-line">FullStack Dev | DevOps & Cloud</p>
+              <p class="font-semibold text-zinc-100 mb-0.5">{{ profile.user.name }}</p>
+              <p class="text-zinc-400 whitespace-pre-line">{{ profile.user.bio }}</p>
             </div>
           </div>
         </header>
 
-        <!-- Status Mobile (Só aparece no celular) -->
+        <!-- Status Mobile -->
         <div
           class="flex md:hidden justify-around border-t border-zinc-800 py-3 text-sm text-center text-zinc-100 mb-4"
         >
@@ -201,14 +244,13 @@ onMounted(() => {
             <span class="text-zinc-500 text-xs">publicações</span>
           </div>
           <div class="flex flex-col">
-            <span class="font-bold">482</span> <span class="text-zinc-500 text-xs">seguidores</span>
+            <span class="font-bold">0</span> <span class="text-zinc-500 text-xs">seguidores</span>
           </div>
           <div class="flex flex-col">
-            <span class="font-bold">294</span> <span class="text-zinc-500 text-xs">seguindo</span>
+            <span class="font-bold">0</span> <span class="text-zinc-500 text-xs">seguindo</span>
           </div>
         </div>
 
-        <!-- Abas Navegacionais -->
         <div
           class="border-t border-zinc-800 flex justify-center uppercase text-xs font-bold tracking-widest mt-4 md:mt-0"
         >
@@ -227,42 +269,10 @@ onMounted(() => {
               </svg>
               Publicações
             </button>
-            <button
-              class="flex items-center gap-2 py-4 border-t border-transparent text-zinc-500 hover:text-zinc-300 transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
-                fill="currentColor"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"
-                />
-              </svg>
-              Salvos
-            </button>
-            <button
-              class="flex items-center gap-2 py-4 border-t border-transparent text-zinc-500 hover:text-zinc-300 transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
-                fill="currentColor"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.66 9.73c-.25.56-.66.86-1.12.96-.34.08-.7.01-1.02-.15l-.2-.1a2.6 2.6 0 0 1-1.05-1.16c-.22-.44-.31-1-.18-1.5l.08-.3c.1-.38.25-.75.46-1.1a1.9 1.9 0 0 1 .84-.7c.36-.16.76-.23 1.15-.17.43.06.84.27 1.15.59.34.35.53.8.53 1.28 0 .44-.13.84-.44 1.15zM6.58 6.07c-.4.36-.8.8-1.12 1.3-.3.47-.48 1-.5 1.54-.03.55.15 1.1.48 1.54.34.45.8.84 1.3 1.13.5.28 1.05.42 1.62.4.56-.02 1.1-.2 1.55-.54.43-.33.78-.77 1.02-1.28l.24-.52c.18-.38.28-.8.3-1.22.02-.4-.06-.82-.23-1.18a3.1 3.1 0 0 0-.67-1.03 4.2 4.2 0 0 0-1.1-.78 4.7 4.7 0 0 0-1.4-.42c-.52-.07-1.05-.03-1.54.12-.46.15-.88.4-1.22.75z"
-                />
-              </svg>
-              Marcados
-            </button>
           </div>
         </div>
 
-        <!-- Grid de Fotos Lindão -->
+        <!-- Grid de Fotos -->
         <div class="grid grid-cols-3 gap-1 md:gap-4 mt-2">
           <div
             v-for="post in profile.posts"
@@ -314,32 +324,7 @@ onMounted(() => {
           v-if="profile.posts.length === 0"
           class="flex flex-col items-center justify-center text-zinc-500 py-20"
         >
-          <div
-            class="w-16 h-16 rounded-full border-2 border-zinc-700 flex items-center justify-center mb-4"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="32"
-              height="32"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
-              />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"
-              />
-            </svg>
-          </div>
           <h2 class="text-2xl font-bold text-zinc-200 mb-2">Compartilhe fotos</h2>
-          <p class="text-sm">Quando você compartilhar fotos, elas aparecerão no seu perfil.</p>
         </div>
       </main>
 
@@ -367,7 +352,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Navegação Inferior (Mobile) - Exatamente igual à Home -->
+    <!-- Navegação Inferior (Mobile) -->
     <nav
       class="md:hidden fixed bottom-0 w-full bg-zinc-950 border-t border-zinc-900 flex justify-around p-3 z-50"
     >
@@ -385,22 +370,6 @@ onMounted(() => {
           <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293z" />
         </svg>
       </RouterLink>
-
-      <a href="#" class="text-zinc-500">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="currentColor"
-          viewBox="0 0 16 16"
-        >
-          <path
-            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"
-          />
-        </svg>
-      </a>
-
-      <!-- Ícone Perfil Ativo (Branco) no Mobile -->
       <RouterLink to="/perfil" class="text-white">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -413,5 +382,92 @@ onMounted(() => {
         </svg>
       </RouterLink>
     </nav>
+
+    <!-- ============================================== -->
+    <!-- MODAL DE EDIÇÃO DE PERFIL -->
+    <!-- ============================================== -->
+    <div
+      v-if="isEditModalOpen"
+      class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+    >
+      <div
+        class="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-md overflow-hidden shadow-2xl"
+      >
+        <div class="flex justify-between items-center p-4 border-b border-zinc-800">
+          <h2 class="text-lg font-bold text-zinc-100">Editar Perfil</h2>
+          <button
+            @click="isEditModalOpen = false"
+            class="text-zinc-400 hover:text-white transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form @submit.prevent="submitProfileEdit" class="p-6 flex flex-col gap-5">
+          <!-- Avatar Upload -->
+          <div class="flex flex-col items-center gap-3">
+            <img
+              :src="avatarPreview"
+              alt="Preview"
+              class="w-24 h-24 rounded-full object-cover border border-zinc-700"
+            />
+            <label
+              class="cursor-pointer text-indigo-400 font-semibold text-sm hover:text-indigo-300 transition-colors"
+            >
+              Alterar foto de perfil
+              <input type="file" accept="image/*" class="hidden" @change="handleAvatarChange" />
+            </label>
+          </div>
+
+          <!-- Campos de Texto -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Nome</label>
+            <input
+              v-model="editForm.name"
+              type="text"
+              class="bg-zinc-950 border border-zinc-800 rounded p-2.5 text-zinc-100 focus:outline-none focus:border-indigo-500 transition-colors"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider"
+              >Nome de usuário</label
+            >
+            <input
+              v-model="editForm.username"
+              type="text"
+              class="bg-zinc-950 border border-zinc-800 rounded p-2.5 text-zinc-100 focus:outline-none focus:border-indigo-500 transition-colors"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Bio</label>
+            <textarea
+              v-model="editForm.bio"
+              rows="3"
+              class="bg-zinc-950 border border-zinc-800 rounded p-2.5 text-zinc-100 focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+            ></textarea>
+          </div>
+
+          <button
+            type="submit"
+            :disabled="isSubmitting"
+            class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition-colors mt-2 disabled:opacity-50"
+          >
+            {{ isSubmitting ? 'Salvando...' : 'Salvar Alterações' }}
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
 </template>

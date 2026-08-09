@@ -7,6 +7,8 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\StoryController;
+use App\Http\Controllers\HighlightController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +29,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users/{username}', [ProfileController::class, 'showUser']);
     Route::post('/users/{username}/follow', [FollowController::class, 'toggle']);
     Route::get('/search', [SearchController::class, 'search']);
+    Route::get('/stories', [StoryController::class, 'index']);
+    Route::post('/stories', [StoryController::class, 'store']);
+    Route::post('/highlights', [HighlightController::class, 'store']);
+    Route::get('/highlights/{id}', [HighlightController::class, 'show']);
 
     Route::get('/user', function (Request $request) {
         return $request->user();

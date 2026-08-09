@@ -1,0 +1,35 @@
+# Usamos a imagem oficial do PHP com Apache
+FROM php:8.2-apache
+
+# Instalar dependências do sistema para o Postgres e processamento de imagem (GD)
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libpq-dev \
+    zip \
+    unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_pgsql gd
+
+# Habilitar o mod_rewrite do Apache (necessário para as rotas do Laravel)
+RUN a2enmod rewrite
+
+# Alterar o DocumentRoot do Apache para a pasta public/ do Laravel
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# Copiar todos os arquivos do projeto para o container
+COPY . /var/www/html
+
+# Baixar e instalar o Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Instalar as dependências do Laravel focadas em produção (sem arquivos de dev)
+RUN composer install --no-dev --optimize-autoloader
+
+# Ajustar permissões das pastas que o Laravel precisa escrever
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# O Apache já expõe a porta 80 por padrão, não precisamos de CMD extra

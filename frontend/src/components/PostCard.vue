@@ -1,8 +1,9 @@
 <script setup>
 import { ref } from 'vue'
-import api from '@/services/api'
+import { RouterLink } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
+import api from '../services/api'
 
-// O defineProps diz ao Vue que este componente espera receber um objeto chamado 'post'
 const props = defineProps({
   post: {
     type: Object,
@@ -10,14 +11,17 @@ const props = defineProps({
   },
 })
 
-// Estados reativos locais para gerenciar curtidas e comentários
+// Permite avisar a tela (Home ou Perfil) que o post foi deletado
+const emit = defineEmits(['deleted'])
+
+const authStore = useAuthStore()
+
 const likesCount = ref(props.post.likes)
 const isLiked = ref(props.post.isLiked || false)
 const commentsList = ref(props.post.comments || [])
 const newCommentText = ref('')
-const showCommentsModal = ref(false) // Opcional caso queira expandir os comentários
+const isDeleting = ref(false)
 
-// Função para Curtir / Descurtir
 const toggleLike = async () => {
   try {
     const response = await api.post(`/posts/${props.post.id}/like`)
@@ -28,38 +32,80 @@ const toggleLike = async () => {
   }
 }
 
-// Função para Adicionar Comentário
 const addComment = async () => {
   if (!newCommentText.value.trim()) return
-
   try {
     const response = await api.post(`/posts/${props.post.id}/comments`, {
       body: newCommentText.value,
     })
-    // Adiciona o comentário recém-criado no topo da lista
     commentsList.value.unshift(response.data)
     newCommentText.value = ''
   } catch (error) {
     console.error('Erro ao comentar:', error)
   }
 }
+
+// NOVA FUNÇÃO DE EXCLUSÃO
+const deletePost = async () => {
+  if (!confirm('Tem certeza que deseja excluir esta publicação? Essa ação não pode ser desfeita.'))
+    return
+
+  isDeleting.value = true
+  try {
+    await api.delete(`/posts/${props.post.id}`)
+    // Avisa a tela para remover o post da lista visualmente
+    emit('deleted', props.post.id)
+  } catch (error) {
+    console.error('Erro ao excluir post:', error)
+    alert('Erro ao excluir a publicação.')
+    isDeleting.value = false
+  }
+}
 </script>
 
 <template>
-  <article class="border-b border-zinc-800 pb-6">
-    <!-- Cabeçalho do Post (Autor) -->
-    <div class="flex items-center gap-3 mb-3 px-2 md:px-0">
-      <img
-        :src="post.author.avatar"
-        alt="Avatar"
-        class="w-8 h-8 rounded-full object-cover border border-zinc-700"
-      />
-      <RouterLink
-        :to="'/u/' + post.author.username"
-        class="font-semibold text-sm text-zinc-100 hover:underline"
-        >{{ post.author.username }}</RouterLink
+  <article v-if="!isDeleting" class="border-b border-zinc-800 pb-6">
+    <!-- Cabeçalho do Post com Ícone de Lixeira -->
+    <div class="flex items-center justify-between mb-3 px-2 md:px-0">
+      <div class="flex items-center gap-3">
+        <img
+          :src="post.author.avatar"
+          alt="Avatar"
+          class="w-8 h-8 rounded-full object-cover border border-zinc-700"
+        />
+        <!-- Link para o Perfil -->
+        <RouterLink
+          :to="'/u/' + post.author.username"
+          class="font-semibold text-sm text-zinc-100 hover:underline"
+        >
+          {{ post.author.username }}
+        </RouterLink>
+        <span class="text-zinc-500 text-xs">• 2 h</span>
+      </div>
+
+      <!-- LIXEIRA: Só aparece se o usuário logado for o dono da postagem -->
+      <button
+        v-if="authStore.user?.username === post.author.username"
+        @click="deletePost"
+        class="text-zinc-500 hover:text-red-500 transition-colors p-1"
+        title="Excluir publicação"
       >
-      <span class="text-zinc-500 text-xs">• 2 h</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+          />
+        </svg>
+      </button>
     </div>
 
     <!-- Mídia do Post -->
@@ -71,7 +117,7 @@ const addComment = async () => {
       />
     </div>
 
-    <!-- Ações do Post (Like, Comment) -->
+    <!-- Ações (Like, Comment) -->
     <div class="flex items-center gap-4 mt-3 px-2 md:px-0">
       <!-- Botão de Curtir -->
       <button
@@ -96,7 +142,7 @@ const addComment = async () => {
         </svg>
       </button>
 
-      <!-- Ícone de Balão de Comentário -->
+      <!-- Ícone de Comentário -->
       <button class="hover:text-zinc-400 transition-colors">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -120,23 +166,25 @@ const addComment = async () => {
     <div class="mt-2 px-2 md:px-0">
       <p class="text-sm font-semibold mb-1">{{ likesCount }} curtidas</p>
       <p class="text-sm">
-        <span class="font-semibold mr-2">{{ post.author.username }}</span>
+        <RouterLink :to="'/u/' + post.author.username" class="font-semibold mr-2 hover:underline">{{
+          post.author.username
+        }}</RouterLink>
         <span class="text-zinc-300">{{ post.caption }}</span>
       </p>
 
-      <!-- Seção de Comentários Existentes -->
+      <!-- Lista de Comentários -->
       <div class="mt-2 space-y-1 max-h-32 overflow-y-auto">
         <p v-for="comment in commentsList" :key="comment.id" class="text-sm">
-          <span class="font-semibold mr-2 text-zinc-200">{{ comment.username }}</span>
+          <RouterLink
+            :to="'/u/' + comment.username"
+            class="font-semibold mr-2 text-zinc-200 hover:underline"
+            >{{ comment.username }}</RouterLink
+          >
           <span class="text-zinc-400">{{ comment.body }}</span>
         </p>
       </div>
 
-      <p v-if="commentsList.length === 0" class="text-zinc-500 text-sm mt-1">
-        Nenhum comentário ainda. Seja o primeiro!
-      </p>
-
-      <!-- Input para Novo Comentário -->
+      <!-- Input Comentário -->
       <form
         @submit.prevent="addComment"
         class="mt-3 flex items-center border-t border-zinc-800 pt-2"

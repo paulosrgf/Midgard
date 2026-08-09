@@ -1,7 +1,7 @@
 # Usamos a imagem oficial do PHP com Apache
 FROM php:8.4-apache
 
-# Instalar dependências do sistema e extensões do Postgres e GD
+# Instalar dependências do sistema necessárias para o Postgres e GD
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \

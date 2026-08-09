@@ -1,7 +1,7 @@
 # Usamos a imagem oficial do PHP com Apache
 FROM php:8.4-apache
 
-# Instalar dependências do sistema
+# Instalar dependências do sistema para o Postgres e processamento de imagem (GD)
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -20,35 +20,21 @@ ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Copiar o Composer PRIMEIRO
+# Copiar o Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copiar os arquivos do projeto DEPOIS (agora sim o Laravel existe lá dentro)
+# Copiar os arquivos do projeto
 COPY . /var/www/html
 
-# Agora podemos instalar as dependências
+# Instalar as dependências de produção
 RUN composer install --no-dev --optimize-autoloader
 
-# Ajustar permissões das pastas
+# Ajustar permissões das pastas que o Laravel precisa escrever
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# =========================================================================
-# A MÁGICA DO ENTRYPOINT:
-# O clear e as migrations rodam em runtime (quando o container sobe e lê o env)
-# =========================================================================
-RUN echo '#!/bin/sh' > /usr/local/bin/entrypoint.sh \
-    && echo 'set -e' >> /usr/local/bin/entrypoint.sh \
-    && echo 'echo "Limpando cache de config..."' >> /usr/local/bin/entrypoint.sh \
-    && echo 'php artisan config:clear' >> /usr/local/bin/entrypoint.sh \
-    && echo 'echo "Rodando Migrations..."' >> /usr/local/bin/entrypoint.sh \
-    && echo 'php artisan migrate --force' >> /usr/local/bin/entrypoint.sh \
-    && echo 'echo "Rodando Seeders..."' >> /usr/local/bin/entrypoint.sh \
-    && echo 'php artisan db:seed --force || true' >> /usr/local/bin/entrypoint.sh \
-    && echo 'echo "Iniciando Apache..."' >> /usr/local/bin/entrypoint.sh \
-    && echo 'exec apache2-foreground' >> /usr/local/bin/entrypoint.sh
-
-# Dá permissão de execução pro nosso script
+# Copiar o script de entrypoint externo e dar permissão de execução
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Força o container a sempre iniciar por este script
+# Forçar o container a iniciar pelo nosso entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

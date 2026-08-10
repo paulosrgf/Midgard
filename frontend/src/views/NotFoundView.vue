@@ -1,6 +1,6 @@
 <template>
   <main
-    class="flex-1 flex flex-col items-center justify-center w-full max-w-[720px] mx-auto border-x border-zinc-900 bg-black min-h-screen text-center p-8 selection:bg-red-900/40"
+    class="flex-1 flex flex-col items-center justify-center w-full max-w-[720px] mx-auto border-r border-zinc-900 bg-black min-h-screen text-center p-8"
   >
     <h1 class="font-serif text-[120px] leading-none text-zinc-800 tracking-tighter mb-4">404</h1>
     <h2 class="font-serif text-2xl uppercase tracking-widest text-zinc-100 mb-6">

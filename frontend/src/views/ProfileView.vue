@@ -8,10 +8,8 @@ const authStore = useAuthStore()
 const posts = ref([])
 const isEditing = ref(false)
 
-const apiUrl = import.meta.env.VITE_API_BASE_URL || ''
-const storageBaseUrl = apiUrl
-  ? apiUrl.replace('/api', '/storage/')
-  : 'http://localhost:8000/storage/'
+const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+const storageBaseUrl = apiUrl.replace('/api', '/storage/')
 
 const fetchMyPosts = async () => {
   try {
@@ -29,19 +27,17 @@ onMounted(() => {
 
 <template>
   <main
-    class="flex-1 flex justify-center w-full max-w-[720px] mx-auto bg-black border-x border-zinc-900"
+    class="flex-1 flex justify-center w-full max-w-[720px] mx-auto pb-24 md:pb-0 bg-black border-r border-zinc-900"
   >
     <div class="w-full flex flex-col">
-      <!-- Cabeçalho do Perfil -->
       <div class="relative w-full h-48 bg-zinc-950 border-b border-zinc-900 overflow-hidden">
-        <!-- Capa Opcional -->
         <img
           src="https://images.unsplash.com/photo-1542223189-92d8cb29094e?q=80&w=2000&auto=format&fit=crop"
           class="w-full h-full object-cover grayscale opacity-30 mix-blend-luminosity"
         />
       </div>
 
-      <div class="px-8 pb-10 relative">
+      <div class="px-4 md:px-8 pb-10 relative">
         <div class="flex justify-between items-end -mt-16 mb-6">
           <div class="w-32 h-32 bg-black border-2 border-zinc-800 relative z-10 overflow-hidden">
             <img
@@ -82,7 +78,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Sagas Pessoais -->
       <div class="w-full bg-black">
         <div class="border-y border-zinc-900 p-4 text-center">
           <span class="font-serif text-lg tracking-widest uppercase text-zinc-300"
@@ -98,7 +93,6 @@ onMounted(() => {
         </div>
 
         <div v-else class="flex flex-col gap-px bg-zinc-900">
-          <!-- O fundo da div gap-px cria as bordas afiadas entre os posts -->
           <PostCard
             v-for="post in posts"
             :key="post.id"

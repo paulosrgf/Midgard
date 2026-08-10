@@ -7,10 +7,8 @@ const query = ref('')
 const users = ref([])
 const router = useRouter()
 
-const apiUrl = import.meta.env.VITE_API_BASE_URL || ''
-const storageBaseUrl = apiUrl
-  ? apiUrl.replace('/api', '/storage/')
-  : 'http://localhost:8000/storage/'
+const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+const storageBaseUrl = apiUrl.replace('/api', '/storage/')
 
 const searchUsers = async () => {
   if (query.value.trim().length < 2) return
@@ -29,10 +27,18 @@ const goToUser = (id) => {
 
 <template>
   <main
-    class="flex-1 flex flex-col items-center w-full max-w-[720px] mx-auto pb-20 md:pb-0 border-x border-zinc-900 bg-black min-h-screen"
+    class="flex-1 flex flex-col items-center w-full max-w-[720px] mx-auto pb-24 md:pb-0 border-r border-zinc-900 bg-black"
   >
-    <div class="w-full pt-10 px-8 border-b border-zinc-900 pb-10">
-      <h1 class="font-serif text-2xl uppercase tracking-widest text-zinc-100 mb-6">
+    <header
+      class="md:hidden sticky top-0 z-40 bg-black/90 backdrop-blur-md border-b border-zinc-900 p-5 flex items-center justify-center w-full"
+    >
+      <span class="font-serif text-xl font-bold tracking-[0.2em] uppercase text-zinc-100"
+        >Explorar</span
+      >
+    </header>
+
+    <div class="w-full pt-6 md:pt-10 px-8 border-b border-zinc-900 pb-10">
+      <h1 class="hidden md:block font-serif text-2xl uppercase tracking-widest text-zinc-100 mb-6">
         Buscar Guerreiros
       </h1>
       <div class="relative">
@@ -40,7 +46,7 @@ const goToUser = (id) => {
           v-model="query"
           @keyup.enter="searchUsers"
           type="text"
-          placeholder="Digite um nome..."
+          placeholder="NOME DE GUERRA..."
           class="w-full bg-zinc-950 border border-zinc-800 text-zinc-100 font-sans text-sm p-5 pl-14 focus:border-red-700 focus:outline-none transition-colors rounded-none placeholder:text-zinc-700 uppercase tracking-widest"
         />
         <svg
@@ -72,7 +78,7 @@ const goToUser = (id) => {
         v-for="user in users"
         :key="user.id"
         @click="goToUser(user.id)"
-        class="flex items-center gap-4 p-4 border border-zinc-900 hover:border-zinc-700 bg-zinc-950/50 cursor-pointer transition-colors"
+        class="flex items-center gap-4 p-4 border border-zinc-900 hover:border-zinc-700 bg-zinc-950/50 cursor-pointer transition-colors group"
       >
         <img
           :src="
@@ -80,12 +86,13 @@ const goToUser = (id) => {
               ? storageBaseUrl + user.avatar
               : 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&fit=crop'
           "
-          class="w-12 h-12 grayscale object-cover"
+          class="w-12 h-12 grayscale object-cover group-hover:grayscale-0 transition-all"
         />
         <div>
-          <span class="font-serif text-lg tracking-widest uppercase text-zinc-200 block">{{
-            user.username
-          }}</span>
+          <span
+            class="font-serif text-lg tracking-widest uppercase text-zinc-200 block group-hover:text-red-500 transition-colors"
+            >{{ user.username }}</span
+          >
         </div>
       </div>
     </div>

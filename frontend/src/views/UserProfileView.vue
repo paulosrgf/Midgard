@@ -9,10 +9,8 @@ const user = ref(null)
 const posts = ref([])
 const notFound = ref(false)
 
-const apiUrl = import.meta.env.VITE_API_BASE_URL || ''
-const storageBaseUrl = apiUrl
-  ? apiUrl.replace('/api', '/storage/')
-  : 'http://localhost:8000/storage/'
+const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+const storageBaseUrl = apiUrl.replace('/api', '/storage/')
 
 const fetchUserData = async () => {
   try {
@@ -32,9 +30,9 @@ onMounted(() => {
 
 <template>
   <main
-    class="flex-1 flex justify-center w-full max-w-[720px] mx-auto bg-black border-x border-zinc-900 min-h-screen"
+    class="flex-1 flex justify-center w-full max-w-[720px] mx-auto pb-24 md:pb-0 bg-black border-r border-zinc-900 min-h-screen"
   >
-    <div v-if="notFound" class="flex flex-col items-center justify-center p-20 text-center">
+    <div v-if="notFound" class="flex flex-col items-center justify-center w-full p-20 text-center">
       <h2 class="font-serif text-2xl uppercase tracking-widest text-zinc-500 mb-4">
         Guerreiro Caído
       </h2>
@@ -51,7 +49,7 @@ onMounted(() => {
         />
       </div>
 
-      <div class="px-8 pb-10 relative">
+      <div class="px-4 md:px-8 pb-10 relative">
         <div class="flex justify-between items-end -mt-16 mb-6">
           <div class="w-32 h-32 bg-black border-2 border-zinc-800 relative z-10 overflow-hidden">
             <img
@@ -63,7 +61,6 @@ onMounted(() => {
               class="w-full h-full object-cover grayscale"
             />
           </div>
-          <!-- Botão Seguir (Visual) -->
           <button
             class="bg-zinc-100 text-black hover:bg-red-700 hover:text-white font-sans text-[10px] font-bold uppercase tracking-widest px-8 py-3 transition-colors"
           >

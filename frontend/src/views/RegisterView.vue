@@ -1,126 +1,151 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, RouterLink } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
-import bgImage from '../assets/midgard-bg.jpg'
-import { useAuthStore } from '../stores/auth' // 1. Importe a store
 
 const router = useRouter()
-const authStore = useAuthStore() // 2. Inicialize a store
+const authStore = useAuthStore()
 
-const form = ref({
-  name: '',
-  username: '',
-  email: '',
-  password: '',
-})
-
+const username = ref('')
+const email = ref('')
+const password = ref('')
+const passwordConfirmation = ref('')
 const errorMessage = ref('')
+const isLoading = ref(false)
 
 const handleRegister = async () => {
+  if (password.value !== passwordConfirmation.value) {
+    errorMessage.value = 'As runas não coincidem.'
+    return
+  }
+  isLoading.value = true
+  errorMessage.value = ''
   try {
-    errorMessage.value = ''
-    const response = await api.post('/register', form.value)
-
-    // 3. SUBSTITUA o localStorage por isso aqui:
-    authStore.setToken(response.data.access_token)
-
+    await api.post('/register', {
+      username: username.value,
+      email: email.value,
+      password: password.value,
+      password_confirmation: passwordConfirmation.value,
+    })
+    await authStore.login({ email: email.value, password: password.value })
     router.push('/')
   } catch (error) {
-    if (error.response && error.response.data.errors) {
-      const firstErrorKey = Object.keys(error.response.data.errors)[0]
-      errorMessage.value = error.response.data.errors[firstErrorKey][0]
-    } else {
-      errorMessage.value = 'Ocorreu um erro ao tentar criar a conta.'
-    }
+    errorMessage.value = 'Nome já esculpido nas pedras ou dados inválidos.'
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
 
 <template>
-  <div class="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+  <div
+    class="min-h-screen w-full bg-black flex items-center justify-center p-4 selection:bg-red-900/40"
+  >
     <div
-      class="flex w-full max-w-[850px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden border border-zinc-800"
+      class="flex flex-col md:flex-row-reverse w-full max-w-5xl bg-zinc-950 border border-zinc-900 shadow-2xl shadow-black overflow-hidden"
     >
-      <!-- Lado Esquerdo: Imagem Local (Oculta no mobile) -->
-      <div class="hidden md:block w-1/2">
-        <img :src="bgImage" alt="Midgard Atmosphere" class="w-full h-full object-cover" />
+      <!-- ARTE -->
+      <div class="hidden md:block md:w-1/2 relative border-l border-zinc-900 group">
+        <img
+          src="https://images.unsplash.com/photo-1533230687158-95f70a7b4f53?q=80&w=2072&auto=format&fit=crop"
+          alt="Runas/Floresta"
+          class="absolute inset-0 w-full h-full object-cover grayscale mix-blend-luminosity opacity-40 group-hover:opacity-70 transition-all duration-1000"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+        <div class="relative h-full flex flex-col justify-end p-14 text-right items-end">
+          <h1 class="font-serif text-4xl text-zinc-100 uppercase tracking-[0.2em] mb-4">Midgard</h1>
+          <p
+            class="font-sans text-xs text-zinc-400 uppercase tracking-widest leading-relaxed max-w-sm"
+          >
+            Grave seu nome na história. Uma vez feito, os corvos espalharão a notícia.
+          </p>
+        </div>
       </div>
 
-      <!-- Lado Direito: Formulário de Registro -->
-      <div class="w-full md:w-1/2 p-10 flex flex-col justify-center">
-        <div class="flex flex-col items-center">
-          <h1 class="text-zinc-100 text-4xl mb-6 font-serif italic tracking-wider">Midgard</h1>
-          <p class="text-zinc-400 text-sm mb-6 text-center">
-            Crie sua conta para ver os mundos de seus amigos.
-          </p>
-
-          <form @submit.prevent="handleRegister" class="w-full flex flex-col gap-3">
-            <div>
-              <input
-                type="text"
-                v-model="form.name"
-                required
-                placeholder="Nome completo"
-                class="w-full bg-zinc-950/50 border border-zinc-700 text-zinc-200 text-sm p-2.5 rounded-lg focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder-zinc-500"
-              />
-            </div>
-
-            <div>
-              <input
-                type="text"
-                v-model="form.username"
-                required
-                placeholder="Nome de usuário"
-                class="w-full bg-zinc-950/50 border border-zinc-700 text-zinc-200 text-sm p-2.5 rounded-lg focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder-zinc-500"
-              />
-            </div>
-
-            <div>
-              <input
-                type="email"
-                v-model="form.email"
-                required
-                placeholder="Email"
-                class="w-full bg-zinc-950/50 border border-zinc-700 text-zinc-200 text-sm p-2.5 rounded-lg focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder-zinc-500"
-              />
-            </div>
-
-            <div>
-              <input
-                type="password"
-                v-model="form.password"
-                required
-                minlength="8"
-                placeholder="Senha"
-                class="w-full bg-zinc-950/50 border border-zinc-700 text-zinc-200 text-sm p-2.5 rounded-lg focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder-zinc-500"
-              />
-            </div>
-
-            <div
-              v-if="errorMessage"
-              class="text-red-400 text-sm text-center bg-red-950/30 p-2 rounded border border-red-900 mt-1"
-            >
-              {{ errorMessage }}
-            </div>
-
-            <button
-              type="submit"
-              class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm py-2.5 rounded-lg mt-2 transition-colors shadow-lg shadow-indigo-900/20"
-            >
-              Cadastrar
-            </button>
-          </form>
+      <!-- FORMULÁRIO -->
+      <div class="w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-center bg-black relative">
+        <div class="mb-10 border-b border-zinc-900 pb-6">
+          <h2 class="text-3xl font-serif text-zinc-100 tracking-widest uppercase">
+            Forjar Aliança
+          </h2>
         </div>
 
-        <div class="mt-6 pt-5 border-t border-zinc-800 text-center">
-          <p class="text-sm text-zinc-400">
-            Já tem uma conta?
+        <form @submit.prevent="handleRegister" class="flex flex-col gap-5">
+          <div class="flex flex-col gap-2">
+            <label class="font-sans text-[10px] text-zinc-500 uppercase tracking-widest"
+              >Nome de Guerra</label
+            >
+            <input
+              v-model="username"
+              type="text"
+              required
+              class="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 font-sans text-sm p-4 focus:border-red-700 focus:outline-none transition-colors rounded-none placeholder:text-zinc-800"
+              placeholder="ragnar_dev"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-sans text-[10px] text-zinc-500 uppercase tracking-widest"
+              >E-mail</label
+            >
+            <input
+              v-model="email"
+              type="email"
+              required
+              class="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 font-sans text-sm p-4 focus:border-red-700 focus:outline-none transition-colors rounded-none placeholder:text-zinc-800"
+              placeholder="guerreiro@midgard.com"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="flex flex-col gap-2">
+              <label class="font-sans text-[10px] text-zinc-500 uppercase tracking-widest"
+                >Senha</label
+              >
+              <input
+                v-model="password"
+                type="password"
+                required
+                class="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 font-sans text-sm p-4 focus:border-red-700 focus:outline-none transition-colors rounded-none"
+              />
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="font-sans text-[10px] text-zinc-500 uppercase tracking-widest"
+                >Confirmar Senha</label
+              >
+              <input
+                v-model="passwordConfirmation"
+                type="password"
+                required
+                class="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 font-sans text-sm p-4 focus:border-red-700 focus:outline-none transition-colors rounded-none"
+              />
+            </div>
+          </div>
+
+          <div v-if="errorMessage" class="bg-red-950/20 border border-red-900/50 p-4 mt-2">
+            <p class="font-sans text-xs text-red-500 uppercase tracking-wider text-center">
+              {{ errorMessage }}
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            :disabled="isLoading"
+            class="mt-6 w-full bg-zinc-100 hover:bg-red-700 hover:text-white disabled:bg-zinc-900 text-black font-sans text-xs font-bold uppercase tracking-[0.2em] p-5 transition-all flex justify-center items-center"
+          >
+            {{ isLoading ? 'Gravando Runas...' : 'Confirmar Juramento' }}
+          </button>
+        </form>
+
+        <div class="mt-10 text-center">
+          <p class="font-sans text-[10px] text-zinc-500 uppercase tracking-widest">
+            Já pertence a Midgard?
             <RouterLink
               to="/login"
-              class="text-indigo-400 font-medium hover:text-indigo-300 transition-colors"
+              class="text-zinc-300 hover:text-red-500 ml-2 transition-colors border-b border-zinc-700 hover:border-red-500 pb-1"
             >
-              Conecte-se
+              Entrar no Salão
             </RouterLink>
           </p>
         </div>

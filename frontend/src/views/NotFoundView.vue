@@ -1,10 +1,22 @@
 <template>
-  <div class="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-center p-4">
-    <h1 class="text-9xl font-bold text-zinc-800 mb-4">404</h1>
-    <h2 class="text-2xl font-semibold text-zinc-100 mb-4">Página não encontrada</h2>
-    <p class="text-zinc-400 mb-8 max-w-md">O link que você clicou pode estar quebrado ou a página pode ter sido removida.</p>
-    <RouterLink to="/" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-8 rounded-lg transition-colors">
-      Voltar para o Midgard
-    </RouterLink>
-  </div>
+  <main
+    class="flex-1 flex flex-col items-center justify-center w-full max-w-[720px] mx-auto border-x border-zinc-900 bg-black min-h-screen text-center p-8 selection:bg-red-900/40"
+  >
+    <h1 class="font-serif text-[120px] leading-none text-zinc-800 tracking-tighter mb-4">404</h1>
+    <h2 class="font-serif text-2xl uppercase tracking-widest text-zinc-100 mb-6">
+      Além das fronteiras de Midgard
+    </h2>
+    <p
+      class="font-sans text-sm text-zinc-500 uppercase tracking-widest max-w-md leading-relaxed mb-10"
+    >
+      Você vagou pelas névoas de Niflheim e encontrou um beco sem saída. Esta página não existe na
+      lenda.
+    </p>
+    <router-link
+      to="/"
+      class="bg-zinc-100 text-black font-sans text-xs font-bold uppercase tracking-[0.2em] px-8 py-4 hover:bg-red-700 hover:text-white transition-colors"
+    >
+      Retornar ao Salão
+    </router-link>
+  </main>
 </template>

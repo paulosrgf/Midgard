@@ -32,7 +32,18 @@ const handleRegister = async () => {
     await authStore.login({ email: email.value, password: password.value })
     router.push('/')
   } catch (error) {
-    errorMessage.value = 'Nome já esculpido nas pedras ou dados inválidos.'
+    // Extrai a mensagem real enviada pelo Laravel (validação ou erro de regra)
+    if (error.response && error.response.data) {
+      const data = error.response.data
+      if (data.errors) {
+        const firstKey = Object.keys(data.errors)[0]
+        errorMessage.value = data.errors[firstKey][0]
+      } else {
+        errorMessage.value = data.message || 'Dados inválidos nas pedras.'
+      }
+    } else {
+      errorMessage.value = 'Falha de comunicação com o servidor.'
+    }
   } finally {
     isLoading.value = false
   }

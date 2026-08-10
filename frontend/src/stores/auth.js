@@ -1,24 +1,34 @@
 import { defineStore } from 'pinia'
-import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+import api from '../services/api'
 
-export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    // Tenta pegar o token do navegador assim que a aplicação abre
-    token: localStorage.getItem('token') || null,
-    user: null,
-  }),
+export const useAuthStore = defineStore('auth', () => {
+  const token = ref(localStorage.getItem('token') || null)
+  const user = ref(JSON.parse(localStorage.getItem('user')) || null)
 
-  actions: {
-    setToken(tokenValue) {
-      this.token = tokenValue
-      localStorage.setItem('token', tokenValue)
-    },
+  const setToken = (tokenValue) => {
+    token.value = tokenValue
+    localStorage.setItem('token', tokenValue)
+  }
 
-    // Função para sair da conta
-    logout() {
-      this.token = null
-      this.user = null
-      localStorage.removeItem('token') // Apaga o crachá do navegador
-    },
-  },
+  const setUser = (userValue) => {
+    user.value = userValue
+    localStorage.setItem('user', JSON.stringify(userValue))
+  }
+
+  const login = async (credentials) => {
+    const response = await api.post('/login', credentials)
+    setToken(response.data.access_token)
+    setUser(response.data.user)
+    return response.data
+  }
+
+  const logout = () => {
+    token.value = null
+    user.value = null
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+  }
+
+  return { token, user, setToken, setUser, login, logout }
 })

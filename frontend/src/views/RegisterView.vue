@@ -21,18 +21,27 @@ const handleRegister = async () => {
   }
   isLoading.value = true
   errorMessage.value = ''
+
   try {
-    await api.post('/register', {
+    const response = await api.post('/register', {
       name: username.value,
       username: username.value,
       email: email.value,
       password: password.value,
       password_confirmation: passwordConfirmation.value,
     })
-    await authStore.login({ email: email.value, password: password.value })
+
+    // Se o backend já devolveu o token no registro, salvamos na store
+    if (response.data.access_token) {
+      authStore.setToken(response.data.access_token)
+      authStore.setUser(response.data.user)
+    } else {
+      // Fallback: se não mandou, faz o login logo em seguida
+      await authStore.login({ email: email.value, password: password.value })
+    }
+
     router.push('/')
   } catch (error) {
-    // Extrai a mensagem real enviada pelo Laravel (validação ou erro de regra)
     if (error.response && error.response.data) {
       const data = error.response.data
       if (data.errors) {

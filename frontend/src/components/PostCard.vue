@@ -71,30 +71,37 @@ const deletePost = async () => {
 </script>
 
 <template>
-  <article v-if="!isDeleting" class="border-b border-zinc-800 pb-6">
-    <!-- Cabeçalho do Post com Ícone de Lixeira -->
-    <div class="flex items-center justify-between mb-3 px-2 md:px-0">
+  <article v-if="!isDeleting" class="border-b border-zinc-900 pb-6 mb-4">
+    <!-- Cabeçalho do Post -->
+    <div class="flex items-center justify-between mb-4 px-2 md:px-0">
       <div class="flex items-center gap-3">
+        <!-- AVATAR INTELIGENTE (Iniciais do usuário se não tiver foto) -->
         <img
-          :src="post.author.avatar"
+          :src="
+            post.author.avatar
+              ? post.author.avatar.startsWith('http')
+                ? post.author.avatar
+                : storageBaseUrl + post.author.avatar
+              : 'https://ui-avatars.com/api/?name=' +
+                post.author.username +
+                '&background=18181b&color=ef4444&bold=true'
+          "
           alt="Avatar"
-          class="w-8 h-8 rounded-full object-cover border border-zinc-700"
+          class="w-10 h-10 rounded-full object-cover border border-zinc-800"
         />
-        <!-- Link para o Perfil -->
+        <!-- Link corrigido para usar o ID -->
         <RouterLink
-          :to="'/u/' + post.author.username"
-          class="font-semibold text-sm text-zinc-100 hover:underline"
+          :to="'/u/' + post.author.id"
+          class="font-serif tracking-widest text-sm text-zinc-200 hover:text-red-500 transition-colors uppercase"
         >
           {{ post.author.username }}
         </RouterLink>
-        <span class="text-zinc-500 text-xs">• 2 h</span>
       </div>
 
-      <!-- LIXEIRA: Só aparece se o usuário logado for o dono da postagem -->
       <button
-        v-if="authStore.user?.username === post.author.username"
+        v-if="authStore.user?.id === post.author.id"
         @click="deletePost"
-        class="text-zinc-500 hover:text-red-500 transition-colors p-1"
+        class="text-zinc-600 hover:text-red-500 transition-colors p-1"
         title="Excluir publicação"
       >
         <svg
@@ -115,14 +122,16 @@ const deletePost = async () => {
       </button>
     </div>
 
-    <!-- Mídia do Post -->
-    <div class="w-full rounded bg-zinc-900 border border-zinc-800 overflow-hidden">
+    <!-- Mídia do Post (Bordas mais suaves) -->
+    <div class="w-full rounded-md bg-zinc-950 border border-zinc-900 overflow-hidden shadow-lg">
       <img
-        :src="post.image"
-        alt="Post content"
+        :src="post.image.startsWith('http') ? post.image : storageBaseUrl + post.image"
+        alt="Saga"
         class="w-full h-auto object-cover aspect-[4/5] md:aspect-[9/16]"
       />
     </div>
+
+    <!-- O resto do seu arquivo (botões de like, comentários) continua igual abaixo... -->
 
     <!-- Ações (Like, Comment) -->
     <div class="flex items-center gap-4 mt-3 px-2 md:px-0">

@@ -42,27 +42,33 @@ onMounted(() => {
     </div>
 
     <div v-else-if="user" class="w-full flex flex-col">
-      <div class="relative w-full h-48 bg-zinc-950 border-b border-zinc-900 overflow-hidden">
+      <!-- Header do Perfil -->
+      <div class="relative w-full h-56 bg-zinc-900 border-b border-zinc-800 overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1542223189-92d8cb29094e?q=80&w=2000&auto=format&fit=crop"
-          class="w-full h-full object-cover grayscale opacity-30 mix-blend-luminosity"
+          src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2000&auto=format&fit=crop"
+          class="w-full h-full object-cover grayscale opacity-40 mix-blend-overlay"
         />
       </div>
 
-      <div class="px-4 md:px-8 pb-10 relative">
+      <div class="px-6 md:px-10 pb-10 relative">
         <div class="flex justify-between items-end -mt-16 mb-6">
-          <div class="w-32 h-32 bg-black border-2 border-zinc-800 relative z-10 overflow-hidden">
+          <div
+            class="w-32 h-32 bg-zinc-950 border-4 border-zinc-900 relative z-10 overflow-hidden rounded-xl shadow-lg"
+          >
+            <!-- AVATAR INTELIGENTE -->
             <img
               :src="
                 user.avatar
                   ? storageBaseUrl + user.avatar
-                  : 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=300&fit=crop'
+                  : 'https://ui-avatars.com/api/?name=' +
+                    user.username +
+                    '&background=18181b&color=ef4444&size=200&bold=true'
               "
-              class="w-full h-full object-cover grayscale"
+              class="w-full h-full object-cover"
             />
           </div>
           <button
-            class="bg-zinc-100 text-black hover:bg-red-700 hover:text-white font-sans text-[10px] font-bold uppercase tracking-widest px-8 py-3 transition-colors"
+            class="bg-zinc-200 text-zinc-900 hover:bg-red-700 hover:text-white font-sans text-xs font-bold uppercase tracking-widest px-8 py-3 transition-colors rounded"
           >
             Acompanhar
           </button>

@@ -61,19 +61,21 @@ const handleRegister = async () => {
 
 <template>
   <div
-    class="min-h-screen w-full bg-black flex items-center justify-center p-4 selection:bg-red-900/40"
+    class="min-h-screen w-full bg-[#0a0a0a] flex items-center justify-center p-4 selection:bg-red-900/40"
   >
     <div
-      class="flex flex-col md:flex-row-reverse w-full max-w-5xl bg-zinc-950 border border-zinc-900 shadow-2xl shadow-black overflow-hidden"
+      class="flex flex-col md:flex-row-reverse w-full max-w-5xl bg-zinc-950/80 backdrop-blur-xl border border-zinc-800 rounded-lg shadow-2xl shadow-black overflow-hidden"
     >
-      <!-- ARTE -->
+      <!-- ARTE (Agora blindada) -->
       <div class="hidden md:block md:w-1/2 relative border-l border-zinc-900 group">
         <img
-          src="https://images.unsplash.com/photo-1533230687158-95f70a7b4f53?q=80&w=2072&auto=format&fit=crop"
-          alt="Runas/Floresta"
-          class="absolute inset-0 w-full h-full object-cover grayscale mix-blend-luminosity opacity-40 group-hover:opacity-70 transition-all duration-1000"
+          src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000&auto=format&fit=crop"
+          alt="Floresta Nórdica"
+          class="absolute inset-0 w-full h-full object-cover grayscale opacity-50 group-hover:opacity-80 group-hover:grayscale-0 transition-all duration-1000"
         />
-        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+        <div
+          class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent"
+        ></div>
         <div class="relative h-full flex flex-col justify-end p-14 text-right items-end">
           <h1 class="font-serif text-4xl text-zinc-100 uppercase tracking-[0.2em] mb-4">Midgard</h1>
           <p
@@ -85,7 +87,7 @@ const handleRegister = async () => {
       </div>
 
       <!-- FORMULÁRIO -->
-      <div class="w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-center bg-black relative">
+      <div class="w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-center bg-transparent relative">
         <div class="mb-10 border-b border-zinc-900 pb-6">
           <h2 class="text-3xl font-serif text-zinc-100 tracking-widest uppercase">
             Forjar Aliança

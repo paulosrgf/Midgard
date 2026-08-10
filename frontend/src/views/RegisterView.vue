@@ -23,6 +23,7 @@ const handleRegister = async () => {
   errorMessage.value = ''
   try {
     await api.post('/register', {
+      name: username.value,
       username: username.value,
       email: email.value,
       password: password.value,

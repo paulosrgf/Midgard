@@ -22,13 +22,20 @@ const commentsList = ref(props.post.comments || [])
 const newCommentText = ref('')
 const isDeleting = ref(false)
 
+const isLiking = ref(false) // Nova variável para travar duplo clique
+
 const toggleLike = async () => {
+  if (isLiking.value) return // Aborta se já estiver carregando
+
+  isLiking.value = true
   try {
     const response = await api.post(`/posts/${props.post.id}/like`)
     likesCount.value = response.data.likes_count
     isLiked.value = response.data.liked
   } catch (error) {
     console.error('Erro ao curtir postagem:', error)
+  } finally {
+    isLiking.value = false
   }
 }
 
@@ -121,8 +128,9 @@ const deletePost = async () => {
     <div class="flex items-center gap-4 mt-3 px-2 md:px-0">
       <!-- Botão de Curtir -->
       <button
-        @click="toggleLike"
-        class="transition-colors focus:outline-none"
+        @click.prevent="toggleLike"
+        :disabled="isLiking"
+        class="transition-colors focus:outline-none disabled:opacity-50"
         :class="isLiked ? 'text-red-500 hover:text-red-400' : 'hover:text-zinc-400'"
       >
         <svg

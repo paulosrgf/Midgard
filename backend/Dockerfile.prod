@@ -12,6 +12,10 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo pdo_pgsql gd \
     && docker-php-ext-enable pdo_pgsql
 
+# Aumenta os limites de Upload do PHP para 20MB
+RUN echo "upload_max_filesize = 20M" > /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size = 20M" >> /usr/local/etc/php/conf.d/uploads.ini
+
 # Habilita o mod_rewrite do Apache
 RUN a2enmod rewrite
 
@@ -29,8 +33,11 @@ COPY . /var/www/html
 # Instala dependências do Composer sem dev
 RUN composer install --no-dev --optimize-autoloader
 
-# Ajusta permissões
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Cria o atalho da pasta storage para tornar as imagens visíveis
+RUN php artisan storage:link
+
+# Ajusta permissões garantindo que o atalho criado também tenha permissão
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public/storage
 
 # Copia e configura o entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

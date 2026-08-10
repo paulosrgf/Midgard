@@ -19,16 +19,17 @@ class LikeController extends Controller
 
         if ($existingLike) {
             $existingLike->delete();
-            return response()->json([
-                'liked' => false, 
-                'likes_count' => $post->likes()->count()
-            ]);
+            $liked = false;
+        } else {
+            // Instanciado manualmente para evitar erros caso 'user_id' não esteja no $fillable do model
+            $like = new \App\Models\Like();
+            $like->user_id = $user->id;
+            $post->likes()->save($like);
+            $liked = true;
         }
 
-        $post->likes()->create(['user_id' => $user->id]);
-        
         return response()->json([
-            'liked' => true, 
+            'liked' => $liked, 
             'likes_count' => $post->likes()->count()
         ]);
     }

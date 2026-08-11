@@ -207,8 +207,12 @@ onUnmounted(() => {
             <img
               :src="
                 authStore.user?.avatar
-                  ? storageBaseUrl + authStore.user.avatar
-                  : 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&fit=crop'
+                  ? authStore.user.avatar.startsWith('http')
+                    ? authStore.user.avatar
+                    : storageBaseUrl + authStore.user.avatar
+                  : 'https://ui-avatars.com/api/?name=' +
+                    (authStore.user?.username || 'Guerreiro') +
+                    '&background=18181b&color=ef4444&bold=true'
               "
               alt="Perfil"
               class="w-full h-full object-cover grayscale"

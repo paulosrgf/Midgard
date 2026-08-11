@@ -110,8 +110,12 @@ const handlePostSubmit = async (postData) => {
                 <img
                   :src="
                     authStore.user?.avatar
-                      ? storageBaseUrl + authStore.user.avatar
-                      : 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&fit=crop'
+                      ? authStore.user.avatar.startsWith('http')
+                        ? authStore.user.avatar
+                        : storageBaseUrl + authStore.user.avatar
+                      : 'https://ui-avatars.com/api/?name=' +
+                        (authStore.user?.username || 'Guerreiro') +
+                        '&background=18181b&color=ef4444&bold=true'
                   "
                   class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all"
                 />
@@ -211,10 +215,14 @@ const handlePostSubmit = async (postData) => {
         <img
           :src="
             authStore.user?.avatar
-              ? storageBaseUrl + authStore.user.avatar
-              : 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&fit=crop'
+              ? authStore.user.avatar.startsWith('http')
+                ? authStore.user.avatar
+                : storageBaseUrl + authStore.user.avatar
+              : 'https://ui-avatars.com/api/?name=' +
+                (authStore.user?.username || 'Guerreiro') +
+                '&background=18181b&color=ef4444&bold=true'
           "
-          class="w-full h-full object-cover grayscale"
+          class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all"
         />
       </RouterLink>
     </nav>

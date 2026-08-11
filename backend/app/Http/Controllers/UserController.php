@@ -63,4 +63,17 @@ class UserController extends Controller
 
         return response()->json($user);
     }
+    // Adicione esta função no final do seu UserController
+    public function posts($id)
+    {
+        $user = \App\Models\User::findOrFail($id);
+        
+        // O "with" é crucial aqui! Ele traz os relacionamentos para o Vue não quebrar.
+        $posts = $user->posts()
+                      ->with(['author', 'likes', 'comments'])
+                      ->latest()
+                      ->get();
+
+        return response()->json($posts);
+    }
 }

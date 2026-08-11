@@ -26,16 +26,24 @@ const handleLogout = () => {
 const handlePostSubmit = async (postData) => {
   try {
     const formData = new FormData()
-    formData.append('image', postData.image)
+    if (postData.image) {
+      formData.append('image', postData.image)
+    }
     if (postData.caption) {
       formData.append('caption', postData.caption)
     }
 
-    await api.post('/posts', formData)
+    // Configuração correta para envio de arquivos via multipart/form-data
+    await api.post('/posts', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+
     window.dispatchEvent(new CustomEvent('post-created'))
     isCreateModalOpen.value = false
   } catch (error) {
-    console.error('Erro ao registrar a saga:', error)
+    console.error('Erro ao registrar a saga:', error.response?.data || error)
     alert('Ocorreu um erro ao forjar a saga.')
   }
 }
@@ -147,8 +155,8 @@ const handlePostSubmit = async (postData) => {
       </div>
     </div>
 
-    <!-- Navegação Mobile Fixa no Rodapé -->
-    <MobileNav v-if="!isAuthPage" @logout="handleLogout" />
+    <!-- Navegação Mobile Fixa no Rodapé (Com suporte a abrir o modal de post e logout) -->
+    <MobileNav v-if="!isAuthPage" @logout="handleLogout" @open-create="isCreateModalOpen = true" />
 
     <!-- Modal Global -->
     <CreatePostModal

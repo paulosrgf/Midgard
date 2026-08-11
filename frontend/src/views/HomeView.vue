@@ -46,7 +46,7 @@ const handleMundoUpload = async (event) => {
 
   try {
     const formData = new FormData()
-    formData.append('media', file)
+    formData.append('image', file)
 
     await api.post('/stories', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },

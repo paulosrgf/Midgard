@@ -50,16 +50,16 @@ class PostController extends Controller
             'caption' => 'nullable|string|max:255'
         ]);
 
-        // 1. Salva o arquivo no Supabase (pasta 'posts')
+        // Salva fisicamente no Supabase
         $path = $request->file('image')->store('posts', 'supabase');
 
-        // 2. Monta a URL completa pública para salvar no banco
-        $bucketUrl = env('SUPABASE_STORAGE_ENDPOINT') . '/' . env('SUPABASE_STORAGE_BUCKET');
-        $fullUrl = $bucketUrl . '/' . $path;
+        // A MÁGICA AQUI: Transforma o link da API (s3) no link Público (object/public)
+        $publicEndpoint = str_replace('/s3', '/object/public', env('SUPABASE_STORAGE_ENDPOINT'));
+        $fullUrl = $publicEndpoint . '/' . env('SUPABASE_STORAGE_BUCKET') . '/' . $path;
 
         $post = new \App\Models\Post();
         $post->user_id = $request->user()->id;
-        $post->image_path = $fullUrl; // Salva a URL pronta para o Vue ler
+        $post->image_path = $fullUrl; // Salva o link público para o Frontend ler sem bloqueios
         $post->caption = $request->caption;
         $post->save();
 
@@ -75,13 +75,14 @@ class PostController extends Controller
             return response()->json(['message' => 'Ação não autorizada.'], 403);
         }
 
-        // Deleta a imagem do Supabase
         if ($post->image_path) {
-            $bucketUrl = env('SUPABASE_STORAGE_ENDPOINT') . '/' . env('SUPABASE_STORAGE_BUCKET') . '/';
-            // Pega apenas o final do caminho (ex: posts/foto.png) para o comando delete funcionar
+            // Recria a URL base pública para poder limpar e ficar só com o 'posts/foto.png'
+            $publicEndpoint = str_replace('/s3', '/object/public', env('SUPABASE_STORAGE_ENDPOINT'));
+            $bucketUrl = $publicEndpoint . '/' . env('SUPABASE_STORAGE_BUCKET') . '/';
+            
             $relativePath = str_replace($bucketUrl, '', $post->image_path);
             
-            Storage::disk('supabase')->delete($relativePath);
+            \Illuminate\Support\Facades\Storage::disk('supabase')->delete($relativePath);
         }
 
         $post->delete();

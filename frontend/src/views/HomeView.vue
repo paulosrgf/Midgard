@@ -121,11 +121,16 @@ onUnmounted(() => {
             @click="openMundo(userGroup)"
             class="snap-start flex flex-col justify-end w-[96px] h-[140px] bg-zinc-900 border border-zinc-800 cursor-pointer shrink-0 group relative overflow-hidden transition-all hover:border-red-700"
           >
+            <!-- CORREÇÃO AQUI: Capa do Mundo tratando imagem do Supabase S3 -->
             <img
               :src="
                 userGroup[0].user.avatar
-                  ? storageBaseUrl + userGroup[0].user.avatar
-                  : 'https://images.unsplash.com/photo-1599839619722-39751411ea63?w=300&fit=crop'
+                  ? userGroup[0].user.avatar.startsWith('http')
+                    ? userGroup[0].user.avatar
+                    : storageBaseUrl + userGroup[0].user.avatar
+                  : 'https://ui-avatars.com/api/?name=' +
+                    userGroup[0].user.username +
+                    '&background=18181b&color=ef4444&bold=true'
               "
               class="absolute inset-0 w-full h-full object-cover grayscale mix-blend-luminosity group-hover:grayscale-0 group-hover:mix-blend-normal transition-all duration-500"
             />

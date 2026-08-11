@@ -15,6 +15,21 @@ const storageBaseUrl = apiUrl.replace('/api', '/storage/')
 
 const currentStory = computed(() => props.userGroup[currentIndex.value])
 
+// FUNÇÕES DE SEGURANÇA PARA AS IMAGENS (Supabase + Fallback)
+const getAvatarUrl = (user) => {
+  if (!user.avatar) {
+    return `https://ui-avatars.com/api/?name=${user.username}&background=18181b&color=ef4444&bold=true`
+  }
+  return user.avatar.startsWith('http') ? user.avatar : storageBaseUrl + user.avatar
+}
+
+const getStoryMediaUrl = (story) => {
+  // Pega o caminho, independente se no seu banco chama image_path ou media_path
+  const path = story.image_path || story.media_path
+  if (!path) return ''
+  return path.startsWith('http') ? path : storageBaseUrl + path
+}
+
 const nextStory = () => {
   if (currentIndex.value < props.userGroup.length - 1) {
     currentIndex.value++
@@ -68,14 +83,9 @@ const prevStory = () => {
 
       <!-- Info do Usuário -->
       <div class="absolute top-8 left-4 flex items-center gap-3 z-20">
+        <!-- Avatar Limpo -->
         <img
-          :src="
-            currentStory.user.avatar
-              ? storageBaseUrl + currentStory.user.avatar
-              : 'https://ui-avatars.com/api/?name=' +
-                currentStory.user.username +
-                '&background=18181b&color=ef4444&bold=true'
-          "
+          :src="getAvatarUrl(currentStory.user)"
           class="w-10 h-10 rounded-full border border-zinc-700 shadow-md object-cover"
         />
         <span class="text-white font-serif tracking-widest text-sm drop-shadow-md uppercase">{{
@@ -83,17 +93,9 @@ const prevStory = () => {
         }}</span>
       </div>
 
-      <!-- A Imagem do Story Corrigida -->
+      <!-- A Imagem do Story Limpa -->
       <div class="flex-1 w-full h-full relative" @click="nextStory">
-        <img
-          :src="
-            currentStory.media_path.startsWith('http')
-              ? currentStory.media_path
-              : storageBaseUrl + currentStory.media_path
-          "
-          class="w-full h-full object-cover"
-          alt="Mundo"
-        />
+        <img :src="getStoryMediaUrl(currentStory)" class="w-full h-full object-cover" alt="Mundo" />
       </div>
 
       <!-- Área de Clique Esquerda para voltar -->

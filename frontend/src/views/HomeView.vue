@@ -74,10 +74,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex-1 flex w-full justify-between">
-    <!-- FLUXO PRINCIPAL (CENTRO) -->
+  <div class="flex-1 flex w-full justify-center">
+    <!-- FLUXO PRINCIPAL (CENTRO E RESPONSIVO) -->
     <main
-      class="flex-1 flex justify-center w-full max-w-[720px] mx-auto pb-24 md:pb-0 border-r border-zinc-900 bg-black"
+      class="flex-1 flex flex-col items-center w-full max-w-[720px] mx-auto pb-24 md:pb-0 md:border-r border-zinc-900 bg-black min-h-screen"
     >
       <!-- Top Bar (Mobile) -->
       <header

@@ -16,8 +16,21 @@ const emit = defineEmits(['deleted'])
 
 const authStore = useAuthStore()
 
-const likesCount = ref(props.post.likes)
-const isLiked = ref(props.post.isLiked || false)
+// --- CORREÇÃO DAS CURTIDAS (Trata Array ou Número) ---
+const getInitialLikesCount = () => {
+  if (Array.isArray(props.post.likes)) return props.post.likes.length
+  return typeof props.post.likes === 'number' ? props.post.likes : 0
+}
+
+const getInitialIsLiked = () => {
+  if (Array.isArray(props.post.likes) && authStore.user) {
+    return props.post.likes.some((like) => like.user_id === authStore.user.id)
+  }
+  return props.post.isLiked || false
+}
+
+const likesCount = ref(getInitialLikesCount())
+const isLiked = ref(getInitialIsLiked())
 const commentsList = ref(props.post.comments || [])
 const newCommentText = ref('')
 const isDeleting = ref(false)

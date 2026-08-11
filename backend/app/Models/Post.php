@@ -9,9 +9,8 @@ class Post extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'image', 'caption'];
+    protected $fillable = ['user_id', 'image_path', 'caption'];
 
-    // Essa é a mágica que o Vue precisa para ler post.author.username
     public function author()
     {
         return $this->belongsTo(User::class, 'user_id');

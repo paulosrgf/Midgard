@@ -136,6 +136,103 @@
                 ]
             }
         },
+        "/posts": {
+            "get": {
+                "tags": [
+                    "Sagas"
+                ],
+                "summary": "Listar Sagas (Feed)",
+                "description": "Retorna todas as postagens do salão com seus autores, curtidas e comentários",
+                "operationId": "5f292ed47bdbfa79356750be0807450c",
+                "responses": {
+                    "200": {
+                        "description": "Sagas recuperadas com sucesso"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Sagas"
+                ],
+                "summary": "Forjar uma Saga (Criar Post)",
+                "description": "Faz o upload de uma imagem para o Supabase e cria a postagem",
+                "operationId": "c2e0b0e26215e6d34ece33ebae25f7df",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "image"
+                                ],
+                                "properties": {
+                                    "image": {
+                                        "description": "A imagem da saga",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "caption": {
+                                        "description": "Legenda opcional",
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Saga forjada com sucesso"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/posts/{id}": {
+            "delete": {
+                "tags": [
+                    "Sagas"
+                ],
+                "summary": "Destruir Saga (Excluir Post)",
+                "description": "Apaga a imagem da nuvem e deleta o registro (Apenas o autor pode fazer isso)",
+                "operationId": "54788a50da690c5ee1dfdc25425a1f87",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID da Saga",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Saga destruída"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/profile": {
             "get": {
                 "tags": [
@@ -149,6 +246,106 @@
                     }
                 }
             }
+        },
+        "/stories": {
+            "get": {
+                "tags": [
+                    "Mundos"
+                ],
+                "summary": "Listar Mundos (Stories)",
+                "description": "Retorna apenas os stories ativos (que ainda não atingiram o limite de 24 horas)",
+                "operationId": "3b7ca25d3f2902333dc031e052d6f3f9",
+                "responses": {
+                    "200": {
+                        "description": "Mundos recuperados com sucesso"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Mundos"
+                ],
+                "summary": "Forjar um Mundo (Criar Story)",
+                "description": "Faz o upload de uma imagem para o Supabase com regra de expiração de 24 horas",
+                "operationId": "9bd3f80317a4d0b0d7a4f0de3e8108a3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "image"
+                                ],
+                                "properties": {
+                                    "image": {
+                                        "description": "A imagem do story",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Mundo criado com sucesso"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/stories/{id}": {
+            "delete": {
+                "tags": [
+                    "Mundos"
+                ],
+                "summary": "Destruir Mundo (Excluir Story)",
+                "description": "Apaga o story da nuvem prematuramente (antes das 24h) pelo próprio autor",
+                "operationId": "8b90aeafa01a9fe103d496d4cb25a673",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do Mundo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Mundo destruído"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "scheme": "bearer"
+            }
         }
     },
     "tags": [
@@ -157,8 +354,16 @@
             "description": "Autenticação"
         },
         {
+            "name": "Sagas",
+            "description": "Sagas"
+        },
+        {
             "name": "Perfil",
             "description": "Perfil"
+        },
+        {
+            "name": "Mundos",
+            "description": "Mundos"
         }
     ]
 }

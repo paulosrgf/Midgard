@@ -5,32 +5,33 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Post;
-use App\Models\Comment;
-use App\Models\Like;
-use App\Models\Follow;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        // 1. Criar Usuários
-        $users = [
-            User::create(['name' => 'Paulo Sergio', 'username' => 'paulosrgf', 'email' => 'paulo@midgard.com', 'password' => Hash::make('password'), 'bio' => 'FullStack Dev | DevOps & Cloud']),
-            User::create(['name' => 'Cyber Sec', 'username' => 'cyber_sec_student', 'email' => 'cyber@midgard.com', 'password' => Hash::make('password'), 'bio' => 'Estudante de Cyber Security']),
-            User::create(['name' => 'DevOps Cloud', 'username' => 'devops_cloud', 'email' => 'devops@midgard.com', 'password' => Hash::make('password'), 'bio' => 'Amante de infraestrutura.']),
-            User::create(['name' => 'Meteor Rider', 'username' => 'meteor_rider', 'email' => 'meteor@midgard.com', 'password' => Hash::make('password'), 'bio' => 'Royal Enfield Meteor 350.']),
-        ];
+        // 1. Cria o SEU usuário principal para você não precisar criar conta toda vez
+        $masterUser = User::create([
+            'name' => 'Paulo (DevOps)',
+            'username' => 'paulo_admin',
+            'email' => 'admin@midgard.com',
+            'password' => Hash::make('senha123'),
+        ]);
 
-        // 2. Sistema de Follows (Todo mundo segue o Paulo, e o Paulo segue alguns)
-        Follow::create(['follower_id' => $users[1]->id, 'followed_id' => $users[0]->id]);
-        Follow::create(['follower_id' => $users[2]->id, 'followed_id' => $users[0]->id]);
-        Follow::create(['follower_id' => $users[3]->id, 'followed_id' => $users[0]->id]);
-        Follow::create(['follower_id' => $users[0]->id, 'followed_id' => $users[1]->id]);
-        
-        // *Nota: Evitei criar posts no Seeder porque os arquivos físicos das imagens
-        // não existem no seu HD local (storage). Se eu criasse no banco, as imagens 
-        // apareceriam quebradas no Frontend. Crie 2 ou 3 posts manualmente pela 
-        // interface clicando em "Criar" para a demonstração ficar com imagens reais!
+        // 2. Cria 5 usuários falsos usando a Factory padrão do Laravel
+        $usuarios = User::factory(5)->create();
+
+        // 3. Para cada usuário falso criado, vamos forjar 2 Sagas (Posts)
+        foreach ($usuarios as $user) {
+            Post::factory(2)->create([
+                'user_id' => $user->id
+            ]);
+        }
+
+        // 4. Cria 3 Sagas exclusivas para o seu usuário principal
+        Post::factory(3)->create([
+            'user_id' => $masterUser->id
+        ]);
     }
 }

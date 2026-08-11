@@ -5,24 +5,52 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Services\PostService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class PostController extends Controller
 {
     protected $postService;
 
-    // Injeção de dependência (o Laravel entende e injeta o Service aqui)
     public function __construct(PostService $postService)
     {
         $this->postService = $postService;
     }
 
+    #[OA\Get(
+        path: "/posts",
+        summary: "Listar Sagas (Feed)",
+        description: "Retorna todas as postagens do salão com seus autores, curtidas e comentários",
+        tags: ["Sagas"],
+        security: [["sanctum" => []]]
+    )]
+    #[OA\Response(response: 200, description: "Sagas recuperadas com sucesso")]
     public function index()
     {
-        // A busca simples pode ficar aqui no controller
         $posts = Post::with(['author', 'likes', 'comments.user'])->latest()->get();
         return response()->json($posts);
     }
 
+    #[OA\Post(
+        path: "/posts",
+        summary: "Forjar uma Saga (Criar Post)",
+        description: "Faz o upload de uma imagem para o Supabase e cria a postagem",
+        tags: ["Sagas"],
+        security: [["sanctum" => []]]
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\MediaType(
+            mediaType: "multipart/form-data",
+            schema: new OA\Schema(
+                required: ["image"],
+                properties: [
+                    new OA\Property(property: "image", type: "string", format: "binary", description: "A imagem da saga"),
+                    new OA\Property(property: "caption", type: "string", description: "Legenda opcional", nullable: true)
+                ]
+            )
+        )
+    )]
+    #[OA\Response(response: 201, description: "Saga forjada com sucesso")]
     public function store(Request $request)
     {
         $request->validate([
@@ -39,11 +67,20 @@ class PostController extends Controller
         return response()->json($post->load('author'), 201);
     }
 
+    #[OA\Delete(
+        path: "/posts/{id}",
+        summary: "Destruir Saga (Excluir Post)",
+        description: "Apaga a imagem da nuvem e deleta o registro (Apenas o autor pode fazer isso)",
+        tags: ["Sagas"],
+        security: [["sanctum" => []]]
+    )]
+    #[OA\Parameter(name: "id", in: "path", required: true, description: "ID da Saga", schema: new OA\Schema(type: "integer"))]
+    #[OA\Response(response: 200, description: "Saga destruída")]
+    #[OA\Response(response: 403, description: "Acesso negado")]
     public function destroy($id)
     {
         $post = Post::findOrFail($id);
 
-        // Validação de segurança (regra de negócio)
         if (request()->user()->id !== $post->user_id) {
             return response()->json(['message' => 'Ação não autorizada.'], 403);
         }

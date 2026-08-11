@@ -10,7 +10,8 @@ use Illuminate\Routing\Controller as BaseController;
 #[OA\Info(
     version: "1.0.0",
     title: "Midgard API",
-    description: "Documentação da API do clone do Instagram"
+    description: "Documentação da API oficial de Midgard (Clone do Instagram)",
+    contact: new OA\Contact(email: "guerreiro@midgard.com")
 )]
 #[OA\Server(
     url: "http://localhost:8000/api",

@@ -2,7 +2,10 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Midgard API",
-        "description": "Documentação da API do clone do Instagram",
+        "description": "Documentação da API oficial de Midgard (Clone do Instagram)",
+        "contact": {
+            "email": "guerreiro@midgard.com"
+        },
         "version": "1.0.0"
     },
     "servers": [
@@ -12,6 +15,127 @@
         }
     ],
     "paths": {
+        "/register": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Forjar Aliança (Registro)",
+                "description": "Registra um novo guerreiro em Midgard e retorna o Token de acesso",
+                "operationId": "0903f2e0df1a8857bee538fc055417f0",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "username",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Ragnar Lothbrok"
+                                    },
+                                    "username": {
+                                        "type": "string",
+                                        "example": "ragnar_dev"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "guerreiro@midgard.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "senha123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Registro bem-sucedido"
+                    },
+                    "422": {
+                        "description": "Erro de validação (ex: e-mail já em uso)"
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Atravessar os portões (Login)",
+                "description": "Autentica um guerreiro e retorna o Token de acesso",
+                "operationId": "2dd578ff7aba2721293dac66833b27d1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "guerreiro@midgard.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "senha123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login bem-sucedido"
+                    },
+                    "422": {
+                        "description": "Credenciais inválidas"
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Partir do Salão (Logout)",
+                "description": "Encerra a sessão atual do guerreiro, invalidando o token",
+                "operationId": "68a6108af04af5e3bc1ea68a6c6f1299",
+                "responses": {
+                    "200": {
+                        "description": "Sessão encerrada com sucesso"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/profile": {
             "get": {
                 "tags": [
@@ -28,6 +152,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Autenticação",
+            "description": "Autenticação"
+        },
         {
             "name": "Perfil",
             "description": "Perfil"

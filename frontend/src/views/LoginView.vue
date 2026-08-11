@@ -36,7 +36,7 @@ const handleLogin = async () => {
       <div class="hidden md:block md:w-1/2 relative border-r border-zinc-900 group">
         <!-- Mantive a imagem das estátuas, mas com o efeito de ganhar cor no hover -->
         <img
-          src="https://images.unsplash.com/photo-1614728448981-d249f05d53ea?q=80&w=2070&auto=format&fit=crop"
+          src="https://images.unsplash.com/photo-1520114881075-8025287f3b60?q=80&w=2000&auto=format&fit=crop"
           alt="Valhalla"
           class="absolute inset-0 w-full h-full object-cover grayscale opacity-50 group-hover:opacity-80 group-hover:grayscale-0 transition-all duration-1000"
         />

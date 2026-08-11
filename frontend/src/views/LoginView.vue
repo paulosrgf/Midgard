@@ -27,23 +27,25 @@ const handleLogin = async () => {
 
 <template>
   <div
-    class="min-h-screen w-full bg-black flex items-center justify-center p-4 selection:bg-red-900/40"
+    class="min-h-screen w-full bg-[#0a0a0a] flex items-center justify-center p-4 selection:bg-red-900/40"
   >
     <div
-      class="flex flex-col md:flex-row w-full max-w-5xl bg-zinc-950 border border-zinc-900 shadow-2xl shadow-black overflow-hidden"
+      class="flex flex-col md:flex-row w-full max-w-5xl bg-zinc-950/80 backdrop-blur-xl border border-zinc-800 rounded-lg shadow-2xl shadow-black overflow-hidden"
     >
-      <!-- ARTE / LORE -->
+      <!-- ARTE / LORE (Com os mesmos efeitos do Register) -->
       <div class="hidden md:block md:w-1/2 relative border-r border-zinc-900 group">
-        <!-- Imagem remetendo a deuses nórdicos ou estátuas -->
+        <!-- Mantive a imagem das estátuas, mas com o efeito de ganhar cor no hover -->
         <img
           src="https://images.unsplash.com/photo-1614728448981-d249f05d53ea?q=80&w=2070&auto=format&fit=crop"
           alt="Valhalla"
-          class="absolute inset-0 w-full h-full object-cover grayscale mix-blend-luminosity opacity-40 group-hover:opacity-70 transition-all duration-1000"
+          class="absolute inset-0 w-full h-full object-cover grayscale opacity-50 group-hover:opacity-80 group-hover:grayscale-0 transition-all duration-1000"
         />
-        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+        <div
+          class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent"
+        ></div>
 
         <div class="relative h-full flex flex-col justify-end p-14">
-          <h1 class="font-serif text-5xl text-zinc-100 uppercase tracking-[0.2em] mb-4">Midgard</h1>
+          <h1 class="font-serif text-4xl text-zinc-100 uppercase tracking-[0.2em] mb-4">Midgard</h1>
           <p
             class="font-sans text-xs text-zinc-400 uppercase tracking-widest leading-relaxed max-w-sm"
           >
@@ -53,12 +55,12 @@ const handleLogin = async () => {
       </div>
 
       <!-- FORMULÁRIO -->
-      <div class="w-full md:w-1/2 p-10 md:p-16 flex flex-col justify-center bg-black relative">
-        <div class="mb-12 border-b border-zinc-900 pb-6">
+      <div class="w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-center bg-transparent relative">
+        <div class="mb-10 border-b border-zinc-900 pb-6">
           <h2 class="text-3xl font-serif text-zinc-100 tracking-widest uppercase">Entrar</h2>
         </div>
 
-        <form @submit.prevent="handleLogin" class="flex flex-col gap-6">
+        <form @submit.prevent="handleLogin" class="flex flex-col gap-5">
           <div class="flex flex-col gap-2">
             <label class="font-sans text-[10px] text-zinc-500 uppercase tracking-widest"
               >E-mail</label
@@ -67,7 +69,7 @@ const handleLogin = async () => {
               v-model="email"
               type="email"
               required
-              class="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 font-sans text-sm p-4 focus:border-red-700 focus:outline-none transition-colors rounded-none placeholder:text-zinc-700"
+              class="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 font-sans text-sm p-4 focus:border-red-700 focus:outline-none transition-colors rounded-none placeholder:text-zinc-800"
               placeholder="guerreiro@midgard.com"
             />
           </div>
@@ -82,7 +84,7 @@ const handleLogin = async () => {
               v-model="password"
               type="password"
               required
-              class="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 font-sans text-sm p-4 focus:border-red-700 focus:outline-none transition-colors rounded-none placeholder:text-zinc-700"
+              class="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 font-sans text-sm p-4 focus:border-red-700 focus:outline-none transition-colors rounded-none placeholder:text-zinc-800"
               placeholder="••••••••"
             />
           </div>
@@ -102,7 +104,7 @@ const handleLogin = async () => {
           </button>
         </form>
 
-        <div class="mt-12 text-center">
+        <div class="mt-10 text-center">
           <p class="font-sans text-[10px] text-zinc-500 uppercase tracking-widest">
             Ainda não forjou seu nome?
             <RouterLink

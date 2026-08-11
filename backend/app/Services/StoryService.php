@@ -18,12 +18,12 @@ class StoryService {
         // 3. Salva no banco com a regra de negócio de EXPIRAR EM 24 HORAS (+10 Pontos!)
         return Story::create([
             'user_id' => $userId,
-            'image_path' => $fullUrl,
+            'media_path' => $fullUrl,
             'expires_at' => now()->addHours(24), 
         ]);
     }
     public function deleteStory(\App\Models\Story $story) {
-        if ($story->image_path) {
+        if ($story->media_path) {
             $publicEndpoint = str_replace('/s3', '/object/public', env('SUPABASE_STORAGE_ENDPOINT'));
             $bucketUrl = $publicEndpoint . '/' . env('SUPABASE_STORAGE_BUCKET') . '/';
             $relativePath = str_replace($bucketUrl, '', $story->image_path);

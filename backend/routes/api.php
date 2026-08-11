@@ -18,6 +18,8 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // Rotas protegidas
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/users/search', [\App\Http\Controllers\UserController::class, 'search']);
+    Route::post('/users/{id}', [\App\Http\Controllers\UserController::class, 'update']);
     Route::get('/posts', [PostController::class, 'index']);
     Route::post('/posts', [PostController::class, 'store']);
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);

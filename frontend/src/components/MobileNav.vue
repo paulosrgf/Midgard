@@ -34,6 +34,24 @@
       </svg>
     </RouterLink>
 
+    <!-- Botão Central: Forjar Saga (Post) no Mobile -->
+    <button
+      @click="$emit('open-create')"
+      class="w-10 h-10 bg-zinc-100 text-black flex items-center justify-center hover:bg-red-700 hover:text-white transition-colors"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        fill="currentColor"
+        viewBox="0 0 16 16"
+      >
+        <path
+          d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
+        />
+      </svg>
+    </button>
+
     <!-- Perfil -->
     <RouterLink to="/perfil" class="text-zinc-400 hover:text-white p-2" active-class="text-red-600">
       <svg
@@ -49,7 +67,7 @@
       </svg>
     </RouterLink>
 
-    <!-- Botão de Sair (Partir) no Mobile -->
+    <!-- Partir (Logout) -->
     <button
       @click="$emit('logout')"
       class="text-zinc-600 hover:text-red-500 p-2 transition-colors"
@@ -76,5 +94,5 @@
 
 <script setup>
 import { RouterLink } from 'vue-router'
-defineEmits(['logout'])
+defineEmits(['open-create', 'logout'])
 </script>

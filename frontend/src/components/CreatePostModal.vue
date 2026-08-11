@@ -116,11 +116,6 @@ const publicarPost = () => {
 
         <!-- Campo de Legenda -->
         <div class="flex items-start gap-3">
-          <img
-            src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&h=150&fit=crop"
-            alt="Perfil"
-            class="w-8 h-8 rounded-full object-cover"
-          />
           <textarea
             v-model="caption"
             placeholder="Escreva uma legenda..."

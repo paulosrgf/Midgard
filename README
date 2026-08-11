@@ -1,0 +1,75 @@
+# ⚔️ Midgard - The Nordic Social Realm
+
+![Vue.js](https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vue.js&logoColor=4FC08D)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-181818?style=for-the-badge&logo=supabase&logoColor=white)
+![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+
+Midgard é uma aplicação FullStack baseada na arquitetura e funcionalidades do Instagram, porém imersa na estética e mitologia nórdica. Desenvolvida com foco em escalabilidade, integrações Cloud e boas práticas de desenvolvimento de software.
+
+Este projeto foi forjado como requisito acadêmico para o curso de **Tecnologia em Sistemas para Internet na UTFPR**.
+
+## 🏛️ Arquitetura e Infraestrutura (Cloud & DevOps)
+
+O projeto foi desenhado com separação de responsabilidades (Frontend Decoupled) e infraestrutura em nuvem:
+
+- **Frontend:** Aplicação SPA desenvolvida em Vue 3 (Composition API) e TailwindCSS. Hospedada na **Vercel**.
+- **Backend:** API RESTful desenvolvida em Laravel 11 utilizando o Padrão MSC (Model-Service-Controller). Hospedada no **Render**.
+- **Database & Storage:** Banco de dados PostgreSQL e armazenamento de imagens em buckets S3-compatíveis, ambos providos pelo **Supabase**.
+- **Documentação:** API totalmente documentada interativamente via **Swagger/OpenAPI**.
+
+## ✨ Funcionalidades (O Salão)
+
+- **Autenticação (Sanctum):** Registro e Login com tokens JWT e rotas protegidas.
+- **Sagas (Feed de Posts):** Upload de imagens, criação de legendas, sistema de curtidas e comentários aninhados aos usuários.
+- **Mundos (Stories):** Upload de imagens temporárias. O sistema conta com regras de negócio no backend que expiram e ocultam os _Mundos_ automaticamente após 24 horas.
+- **Sistema de Deleção na Nuvem:** Ao destruir uma Saga ou Mundo, a aplicação se comunica com o Supabase para excluir fisicamente o arquivo do Bucket S3, evitando lixo digital (Egress/Storage costs).
+
+## 📖 Documentação da API (Swagger)
+
+A API possui uma interface visual e interativa para testes.
+Com o backend rodando localmente, acesse:
+
+> `http://localhost:8000/api/documentation`
+
+## 🛠️ Como rodar o projeto localmente
+
+### Pré-requisitos
+
+- PHP 8.2+ e Composer
+- Node.js 18+
+- Uma conta no Supabase (para criar o banco e o bucket de storage)
+
+### Configurando o Backend (API)
+
+```bash
+# 1. Clone o repositório e entre na pasta do backend
+git clone [https://github.com/seu-usuario/midgard.git](https://github.com/seu-usuario/midgard.git)
+cd midgard/backend
+
+# 2. Instale as dependências do PHP
+composer install
+
+# 3. Configure as variáveis de ambiente
+cp .env.example .env
+
+# Abra o .env e configure as chaves do seu Supabase:
+# DB_CONNECTION=pgsql
+# DB_HOST=...
+# SUPABASE_STORAGE_ENDPOINT=...
+# SUPABASE_STORAGE_BUCKET=...
+
+# 4. Gere a chave da aplicação
+php artisan key:generate
+
+# 5. Rode as migrações (Cuidado: certifique-se de estar usando um banco de dev)
+php artisan migrate
+
+# 6. (Opcional) Popule o banco com dados falsos gerados por Factories
+php artisan db:seed
+
+# 7. Inicie o servidor
+php artisan serve
+```

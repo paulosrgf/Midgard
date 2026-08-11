@@ -19,10 +19,15 @@ Route::post('/login', [AuthController::class, 'login']);
 // Rotas protegidas
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users/search', [\App\Http\Controllers\UserController::class, 'search']);
-    Route::get('/users/{id}/posts', [\App\Http\Controllers\UserController::class, 'posts']);
-    Route::get('/users/{id}', [\App\Http\Controllers\UserController::class, 'show']);
-    Route::put('/users/{id}', [\App\Http\Controllers\UserController::class, 'update']); // Apenas o PUT fica!
     
+    // O whereNumber garante que essa rota SÓ dispara se o parâmetro for numérico (ex: /users/1)
+    Route::get('/users/{id}/posts', [\App\Http\Controllers\UserController::class, 'posts'])->whereNumber('id');
+    Route::get('/users/{id}', [\App\Http\Controllers\UserController::class, 'show'])->whereNumber('id');
+    
+    // Se não for número, o Laravel passa direto para cá e busca pelo Username (ex: /users/polokkz)
+    Route::get('/users/{username}', [ProfileController::class, 'showUser']);
+    
+    Route::put('/users/{id}', [\App\Http\Controllers\UserController::class, 'update'])->whereNumber('id');
     Route::get('/posts', [PostController::class, 'index']);
     Route::post('/posts', [PostController::class, 'store']);
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);

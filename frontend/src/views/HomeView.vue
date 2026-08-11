@@ -26,8 +26,6 @@ const fetchMundos = async () => {
   try {
     const response = await api.get('/stories')
 
-    // O backend manda uma lista plana.
-    // Nós agrupamos por 'user_id' aqui no JS para formar os "círculos" de mundos.
     const groupedStories = {}
     response.data.forEach((story) => {
       if (!groupedStories[story.user_id]) {
@@ -126,40 +124,42 @@ onUnmounted(() => {
             <input type="file" accept="image/*" class="hidden" @change="handleMundoUpload" />
           </label>
 
-          <div
-            v-for="(userGroup, userId) in mundos"
-            :key="userId"
-            @click="openMundo(userGroup)"
-            class="snap-start flex flex-col justify-end w-[96px] h-[140px] bg-zinc-900 border border-zinc-800 cursor-pointer shrink-0 group relative overflow-hidden transition-all hover:border-red-700"
-          >
-            <!-- CORREÇÃO AQUI: Capa do Mundo tratando imagem do Supabase S3 -->
-            <img
-              :src="
-                userGroup[0].user.avatar
-                  ? userGroup[0].user.avatar.startsWith('http')
-                    ? userGroup[0].user.avatar
-                    : storageBaseUrl + userGroup[0].user.avatar
-                  : 'https://ui-avatars.com/api/?name=' +
-                    userGroup[0].user.username +
-                    '&background=18181b&color=ef4444&bold=true'
-              "
-              class="absolute inset-0 w-full h-full object-cover grayscale mix-blend-luminosity group-hover:grayscale-0 group-hover:mix-blend-normal transition-all duration-500"
-            />
+          <!-- BLINDAGEM: O template v-for com os pontos de interrogação de segurança -->
+          <template v-for="(userGroup, userId) in mundos" :key="userId">
             <div
-              class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10"
-            ></div>
-            <div
-              class="relative z-20 p-2 text-center border-t border-red-900/30 bg-black/60 backdrop-blur-sm"
+              v-if="userGroup && userGroup.length > 0"
+              @click="openMundo(userGroup)"
+              class="snap-start flex flex-col justify-end w-[96px] h-[140px] bg-zinc-900 border border-zinc-800 cursor-pointer shrink-0 group relative overflow-hidden transition-all hover:border-red-700"
             >
-              <span
-                class="font-serif text-[10px] text-zinc-100 tracking-widest uppercase block truncate"
-                >{{ userGroup[0].user.username }}</span
+              <img
+                :src="
+                  userGroup[0]?.user?.avatar
+                    ? userGroup[0].user.avatar.startsWith('http')
+                      ? userGroup[0].user.avatar
+                      : storageBaseUrl + userGroup[0].user.avatar
+                    : 'https://ui-avatars.com/api/?name=' +
+                      (userGroup[0]?.user?.username || 'Guerreiro') +
+                      '&background=18181b&color=ef4444&bold=true'
+                "
+                class="absolute inset-0 w-full h-full object-cover grayscale mix-blend-luminosity group-hover:grayscale-0 group-hover:mix-blend-normal transition-all duration-500"
+              />
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10"
+              ></div>
+              <div
+                class="relative z-20 p-2 text-center border-t border-red-900/30 bg-black/60 backdrop-blur-sm"
               >
+                <span
+                  class="font-serif text-[10px] text-zinc-100 tracking-widest uppercase block truncate"
+                >
+                  {{ userGroup[0]?.user?.username }}
+                </span>
+              </div>
             </div>
-          </div>
+          </template>
 
           <div
-            v-if="Object.keys(mundos).length === 0"
+            v-if="!Object.values(mundos).some((group) => group && group.length > 0)"
             class="flex items-center justify-center w-full border border-dashed border-zinc-800 h-[140px] bg-zinc-950"
           >
             <span class="font-serif text-xs text-zinc-600 uppercase tracking-widest"
@@ -261,6 +261,7 @@ onUnmounted(() => {
       v-if="selectedMundoGroup"
       :userGroup="selectedMundoGroup"
       @close="selectedMundoGroup = null"
+      @deleted="fetchMundos"
     />
   </div>
 </template>

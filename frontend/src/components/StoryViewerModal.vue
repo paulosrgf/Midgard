@@ -9,7 +9,8 @@ const props = defineProps({
     required: true,
   },
 })
-const emit = defineEmits(['close'])
+// 1ª CORREÇÃO: Adicionado o evento 'deleted'
+const emit = defineEmits(['close', 'deleted'])
 
 const authStore = useAuthStore()
 const currentIndex = ref(0)
@@ -86,6 +87,9 @@ const deleteCurrentStory = async () => {
 
     // Remove o story do array visualmente
     props.userGroup.splice(currentIndex.value, 1)
+
+    // 2ª CORREÇÃO: Avisa a Home para recarregar o banco
+    emit('deleted')
 
     // Se ele apagou o último story que restava, fecha o modal
     if (props.userGroup.length === 0) {

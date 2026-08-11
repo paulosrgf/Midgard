@@ -14,7 +14,6 @@ const isCreateModalOpen = ref(false)
 const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
 const storageBaseUrl = apiUrl.replace('/api', '/storage/')
 
-// Desativa os menus na tela de Login e Register
 const isAuthPage = computed(() => {
   return ['login', 'register'].includes(route.name)
 })
@@ -33,7 +32,7 @@ const handlePostSubmit = async (postData) => {
     }
 
     await api.post('/posts', formData)
-    window.dispatchEvent(new CustomEvent('post-created')) // Avisa a Home para recarregar
+    window.dispatchEvent(new CustomEvent('post-created'))
     isCreateModalOpen.value = false
   } catch (error) {
     console.error('Erro ao registrar a saga:', error)
@@ -44,12 +43,12 @@ const handlePostSubmit = async (postData) => {
 
 <template>
   <div
-    class="min-h-screen w-full bg-black text-zinc-100 flex justify-center relative font-sans selection:bg-red-900/40"
+    class="min-h-screen w-full bg-black text-zinc-100 flex flex-col items-center relative font-sans selection:bg-red-900/40 pb-20 md:pb-0"
   >
     <div
       :class="[
-        'w-full max-w-[1280px] flex flex-col justify-between',
-        !isAuthPage ? 'md:flex-row' : 'items-center',
+        'w-full max-w-[1280px] flex justify-center',
+        !isAuthPage ? 'md:flex-row flex-col items-center md:items-start' : 'items-center',
       ]"
     >
       <!-- 1. BARRA ESQUERDA (DESKTOP) -->
@@ -58,7 +57,6 @@ const handlePostSubmit = async (postData) => {
         class="hidden md:flex flex-col w-[260px] border-r border-zinc-900 p-6 sticky top-0 h-screen shrink-0 justify-between bg-black z-10"
       >
         <div>
-          <!-- Logo Viking -->
           <div class="mb-12 pt-2">
             <h1 class="font-serif text-4xl tracking-[0.2em] uppercase text-zinc-100">Midgard</h1>
           </div>
@@ -143,14 +141,14 @@ const handlePostSubmit = async (postData) => {
         </button>
       </nav>
 
-      <!-- 2. ROUTER VIEW -->
-      <div class="flex-1 flex w-full justify-between">
+      <!-- 2. ROUTER VIEW (CENTRALIZADO NO MOBILE) -->
+      <div class="flex-1 flex w-full justify-center">
         <RouterView />
       </div>
     </div>
 
-    <!-- Navegação Mobile -->
-    <MobileNav v-if="!isAuthPage" />
+    <!-- Navegação Mobile Fixa no Rodapé -->
+    <MobileNav v-if="!isAuthPage" @logout="handleLogout" />
 
     <!-- Modal Global -->
     <CreatePostModal

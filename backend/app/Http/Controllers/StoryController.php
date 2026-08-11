@@ -40,4 +40,17 @@ class StoryController extends Controller
 
         return response()->json($story->load('user'), 201);
     }
+    // Adicione esta função dentro do StoryController
+    public function destroy($id)
+    {
+        $story = \App\Models\Story::findOrFail($id);
+
+        if (request()->user()->id !== $story->user_id) {
+            return response()->json(['message' => 'Acesso negado pelos deuses.'], 403);
+        }
+
+        $this->storyService->deleteStory($story);
+
+        return response()->json(['message' => 'Mundo destruído com sucesso.']);
+    }
 }

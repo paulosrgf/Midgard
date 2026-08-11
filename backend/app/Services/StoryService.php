@@ -22,4 +22,14 @@ class StoryService {
             'expires_at' => now()->addHours(24), 
         ]);
     }
+    public function deleteStory(\App\Models\Story $story) {
+        if ($story->image_path) {
+            $publicEndpoint = str_replace('/s3', '/object/public', env('SUPABASE_STORAGE_ENDPOINT'));
+            $bucketUrl = $publicEndpoint . '/' . env('SUPABASE_STORAGE_BUCKET') . '/';
+            $relativePath = str_replace($bucketUrl, '', $story->image_path);
+            
+            \Illuminate\Support\Facades\Storage::disk('supabase')->delete($relativePath);
+        }
+        return $story->delete();
+    }
 }

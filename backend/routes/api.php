@@ -41,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/search', [SearchController::class, 'search']);
     Route::get('/stories', [StoryController::class, 'index']);
     Route::post('/stories', [StoryController::class, 'store']);
+    Route::delete('/stories/{id}', [StoryController::class, 'destroy']);
     Route::post('/highlights', [HighlightController::class, 'store']);
     Route::get('/highlights/{id}', [HighlightController::class, 'show']);
     

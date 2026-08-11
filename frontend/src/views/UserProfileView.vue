@@ -76,11 +76,6 @@ onMounted(() => {
               class="w-full h-full object-cover"
             />
           </div>
-          <button
-            class="bg-zinc-200 text-zinc-900 hover:bg-red-700 hover:text-white font-sans text-xs font-bold uppercase tracking-widest px-8 py-3 transition-colors rounded"
-          >
-            Acompanhar
-          </button>
         </div>
 
         <h1 class="font-serif text-3xl uppercase tracking-widest text-white mb-2">

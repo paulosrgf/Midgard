@@ -25,23 +25,32 @@ const handleLogout = () => {
 
 const handlePostSubmit = async (postData) => {
   try {
-    const formData = new FormData()
-    if (postData.image) {
-      formData.append('image', postData.image)
+    console.log('Dados recebidos do modal:', postData)
+
+    if (!postData.image) {
+      alert('Erro: Nenhuma imagem foi anexada no modal!')
+      return
     }
+
+    const formData = new FormData()
+    formData.append('image', postData.image)
+
     if (postData.caption) {
       formData.append('caption', postData.caption)
     }
 
-    // REMOVA o objeto de headers com 'Content-Type'.
-    // O Axios gera o boundary automaticamente quando recebe um FormData.
+    // DEBUG: Veja se o FormData realmente tem o arquivo 'image'
+    for (let pair of formData.entries()) {
+      console.log(pair[0], pair[1])
+    }
+
     await api.post('/posts', formData)
 
     window.dispatchEvent(new CustomEvent('post-created'))
     isCreateModalOpen.value = false
   } catch (error) {
-    console.error('Erro ao registrar a saga:', error.response?.data || error)
-    alert('Ocorreu um erro ao forjar a saga.')
+    console.error('Erro detalhado ao registrar a saga:', error.response?.data || error)
+    alert('Erro ao forjar a saga. Veja o console.')
   }
 }
 </script>

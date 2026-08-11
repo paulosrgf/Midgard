@@ -12,12 +12,21 @@ const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
 const storageBaseUrl = apiUrl.replace('/api', '/storage/')
 
 const fetchUserData = async () => {
+  // Pega o parâmetro independentemente de como foi nomeado no router (id, userId ou username)
+  const identifier = route.params.id || route.params.userId || route.params.username
+
+  if (!identifier) {
+    notFound.value = true
+    return
+  }
+
   try {
-    const resUser = await api.get(`/users/${route.params.id}`)
+    const resUser = await api.get(`/users/${identifier}`)
     user.value = resUser.data
-    const resPosts = await api.get(`/users/${route.params.id}/posts`)
+    const resPosts = await api.get(`/users/${identifier}/posts`)
     posts.value = resPosts.data
   } catch (error) {
+    console.error('Erro ao buscar perfil:', error)
     notFound.value = true
   }
 }
@@ -54,7 +63,6 @@ onMounted(() => {
           <div
             class="w-32 h-32 bg-zinc-950 border-4 border-zinc-900 relative z-10 overflow-hidden rounded-xl shadow-lg"
           >
-            <!-- AVATAR CORRIGIDO PARA O SUPABASE S3 -->
             <img
               :src="
                 user.avatar

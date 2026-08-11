@@ -22,10 +22,14 @@ const commentsList = ref(props.post.comments || [])
 const newCommentText = ref('')
 const isDeleting = ref(false)
 
-const isLiking = ref(false) // Nova variável para travar duplo clique
+const isLiking = ref(false) // Trava de duplo clique
+
+// Variáveis de ambiente para o Storage
+const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+const storageBaseUrl = apiUrl.replace('/api', '/storage/')
 
 const toggleLike = async () => {
-  if (isLiking.value) return // Aborta se já estiver carregando
+  if (isLiking.value) return
 
   isLiking.value = true
   try {
@@ -52,7 +56,6 @@ const addComment = async () => {
   }
 }
 
-// NOVA FUNÇÃO DE EXCLUSÃO
 const deletePost = async () => {
   if (!confirm('Tem certeza que deseja excluir esta publicação? Essa ação não pode ser desfeita.'))
     return
@@ -60,7 +63,6 @@ const deletePost = async () => {
   isDeleting.value = true
   try {
     await api.delete(`/posts/${props.post.id}`)
-    // Avisa a tela para remover o post da lista visualmente
     emit('deleted', props.post.id)
   } catch (error) {
     console.error('Erro ao excluir post:', error)
@@ -75,7 +77,7 @@ const deletePost = async () => {
     <!-- Cabeçalho do Post -->
     <div class="flex items-center justify-between mb-4 px-2 md:px-0">
       <div class="flex items-center gap-3">
-        <!-- AVATAR INTELIGENTE (Iniciais do usuário se não tiver foto) -->
+        <!-- AVATAR INTELIGENTE -->
         <img
           :src="
             post.author.avatar
@@ -89,7 +91,7 @@ const deletePost = async () => {
           alt="Avatar"
           class="w-10 h-10 rounded-full object-cover border border-zinc-800"
         />
-        <!-- Link corrigido para usar o ID -->
+        <!-- Link corrigido para usar o ID do autor -->
         <RouterLink
           :to="'/u/' + post.author.id"
           class="font-serif tracking-widest text-sm text-zinc-200 hover:text-red-500 transition-colors uppercase"
@@ -122,7 +124,7 @@ const deletePost = async () => {
       </button>
     </div>
 
-    <!-- Mídia do Post (Bordas mais suaves) -->
+    <!-- Mídia do Post -->
     <div class="w-full rounded-md bg-zinc-950 border border-zinc-900 overflow-hidden shadow-lg">
       <img
         :src="
@@ -132,11 +134,9 @@ const deletePost = async () => {
         class="w-full h-auto object-cover aspect-[4/5] md:aspect-[9/16]"
       />
     </div>
-    <!-- O resto do seu arquivo (botões de like, comentários) continua igual abaixo... -->
 
     <!-- Ações (Like, Comment) -->
     <div class="flex items-center gap-4 mt-3 px-2 md:px-0">
-      <!-- Botão de Curtir -->
       <button
         @click.prevent="toggleLike"
         :disabled="isLiking"
@@ -160,7 +160,6 @@ const deletePost = async () => {
         </svg>
       </button>
 
-      <!-- Ícone de Comentário -->
       <button class="hover:text-zinc-400 transition-colors">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -184,7 +183,7 @@ const deletePost = async () => {
     <div class="mt-2 px-2 md:px-0">
       <p class="text-sm font-semibold mb-1">{{ likesCount }} curtidas</p>
       <p class="text-sm">
-        <RouterLink :to="'/u/' + post.author.username" class="font-semibold mr-2 hover:underline">{{
+        <RouterLink :to="'/u/' + post.author.id" class="font-semibold mr-2 hover:underline">{{
           post.author.username
         }}</RouterLink>
         <span class="text-zinc-300">{{ post.caption }}</span>
@@ -193,11 +192,7 @@ const deletePost = async () => {
       <!-- Lista de Comentários -->
       <div class="mt-2 space-y-1 max-h-32 overflow-y-auto">
         <p v-for="comment in commentsList" :key="comment.id" class="text-sm">
-          <RouterLink
-            :to="'/u/' + comment.username"
-            class="font-semibold mr-2 text-zinc-200 hover:underline"
-            >{{ comment.username }}</RouterLink
-          >
+          <span class="font-semibold mr-2 text-zinc-200">{{ comment.username }}</span>
           <span class="text-zinc-400">{{ comment.body }}</span>
         </p>
       </div>

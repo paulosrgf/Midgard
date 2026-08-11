@@ -9,15 +9,12 @@ class Post extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'image_path',
-        'caption',
-    ];
+    protected $fillable = ['user_id', 'image', 'caption'];
 
-    public function user()
+    // Essa é a mágica que o Vue precisa para ler post.author.username
+    public function author()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function likes()
@@ -27,7 +24,6 @@ class Post extends Model
 
     public function comments()
     {
-        return $this->hasMany(Comment::class)->with('user')->latest();
+        return $this->hasMany(Comment::class);
     }
-
 }

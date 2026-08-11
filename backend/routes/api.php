@@ -20,6 +20,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users/search', [\App\Http\Controllers\UserController::class, 'search']);
     Route::post('/users/{id}', [\App\Http\Controllers\UserController::class, 'update']);
+    Route::get('/users/{id}/posts', [\App\Http\Controllers\UserController::class, 'posts']);
     Route::get('/posts', [PostController::class, 'index']);
     Route::post('/posts', [PostController::class, 'store']);
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);
@@ -35,7 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/stories', [StoryController::class, 'store']);
     Route::post('/highlights', [HighlightController::class, 'store']);
     Route::get('/highlights/{id}', [HighlightController::class, 'show']);
-    Route::get('/users/{id}/posts', [\App\Http\Controllers\UserController::class, 'posts']);
+    
 
     Route::get('/user', function (Request $request) {
         return $request->user();

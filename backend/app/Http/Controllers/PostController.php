@@ -10,28 +10,32 @@ class PostController extends Controller
     // Função que DEVOLVE os posts para o Feed (GET)
     public function index(Request $request)
     {
-        $posts = Post::with(['user', 'likes', 'comments.user'])->latest()->get();
+        // 1. Trocado 'user' por 'author' para alinhar com o banco e o Vue
+        $posts = Post::with(['author', 'likes', 'comments.user'])->latest()->get();
         $currentUserId = $request->user() ? $request->user()->id : null;
 
         $formattedPosts = $posts->map(function ($post) use ($currentUserId) {
-            // Garante que se o usuário dono do post não existir, ele não quebra a aplicação
-            $authorName = $post->user ? ($post->user->name ?? $post->user->username) : 'Usuário Desconhecido';
-            $authorAvatar = $post->user->avatar ?? 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&h=150&fit=crop';
+            // 2. Trocado $post->user por $post->author
+            $authorName = $post->author ? ($post->author->name ?? $post->author->username) : 'Guerreiro Caído';
+            
+            // Passamos null se não tiver foto para o Vue gerar o Avatar Inteligente
+            $authorAvatar = $post->author->avatar ?? null; 
 
             return [
                 'id' => $post->id,
                 'author' => [
+                    'id' => $post->author ? $post->author->id : null, // ID é obrigatório para clicar e ir pro perfil
                     'username' => $authorName,
                     'avatar' => $authorAvatar,
                 ],
-                'image' => asset('storage/' . $post->image_path),
+                'image_path' => $post->image_path, // Agora enviamos 'image_path' diretamente, que é o que o Vue procura
                 'likes' => $post->likes ? $post->likes->count() : 0,
                 'isLiked' => $currentUserId && $post->likes ? $post->likes->contains('user_id', $currentUserId) : false,
                 'caption' => $post->caption,
                 'comments' => $post->comments ? $post->comments->map(function ($comment) {
                     return [
                         'id' => $comment->id,
-                        'username' => $comment->user ? ($comment->user->name ?? 'Usuário') : 'Usuário',
+                        'username' => $comment->user ? ($comment->user->name ?? $comment->user->username) : 'Usuário',
                         'body' => $comment->body
                     ];
                 }) : [],
@@ -44,35 +48,31 @@ class PostController extends Controller
     // Função que SALVA um novo post (POST)
     public function store(Request $request)
     {
-        // 1. Valida se a imagem realmente chegou
         $request->validate([
-            'image' => 'required|image|max:20480', // Máximo 20MB
+            'image' => 'required|image|max:20480',
             'caption' => 'nullable|string|max:255'
         ]);
 
-        // 2. Salva o arquivo fisicamente na pasta storage/app/public/posts
         $path = $request->file('image')->store('posts', 'public');
 
-        // 3. Salva no banco de dados com os nomes EXATOS das colunas
         $post = new \App\Models\Post();
         $post->user_id = $request->user()->id;
-        $post->image_path = $path; // Aqui é onde o erro estava acontecendo!
+        $post->image_path = $path; 
         $post->caption = $request->caption;
         $post->save();
 
-        // 4. Retorna o post recém-criado já empacotado com o Autor para o Vue não quebrar
         return response()->json($post->load('author'), 201);
     }
+
+    // Função que APAGA um post (DELETE)
     public function destroy(Request $request, $id)
     {
         $post = Post::findOrFail($id);
 
-        // Regra do plano: restrito ao próprio autor[cite: 1]
         if ($request->user()->id !== $post->user_id) {
             return response()->json(['message' => 'Ação não autorizada.'], 403);
         }
 
-        // Apaga a imagem do disco
         if ($post->image_path) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($post->image_path);
         }

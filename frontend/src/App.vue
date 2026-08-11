@@ -4,6 +4,7 @@ import { RouterLink, RouterView, useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import api from './services/api'
 import CreatePostModal from './components/CreatePostModal.vue'
+import MobileNav from './components/MobileNav.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -142,90 +143,14 @@ const handlePostSubmit = async (postData) => {
         </button>
       </nav>
 
-      <!-- 2. ROUTER VIEW (INJETA AS PÁGINAS AQUI) -->
-      <div
-        :class="[
-          'flex-1 flex w-full justify-between',
-          isAuthPage ? 'justify-center items-center' : '',
-        ]"
-      >
+      <!-- 2. ROUTER VIEW -->
+      <div class="flex-1 flex w-full justify-between">
         <RouterView />
       </div>
     </div>
 
-    <!-- TERMINAL MOBILE GLOBAL (Navegação Inferior) -->
-    <nav
-      v-if="!isAuthPage"
-      class="md:hidden fixed bottom-0 w-full bg-black border-t border-zinc-900 flex justify-between items-center px-6 py-4 z-50"
-    >
-      <RouterLink to="/" class="text-white relative">
-        <span
-          class="absolute -top-4 left-1/2 -translate-x-1/2 w-1 h-1 bg-red-700 shadow-[0_0_8px_rgba(185,28,28,0.6)]"
-        ></span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          fill="currentColor"
-          viewBox="0 0 16 16"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M2 13.5V7h1v6.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V7h1v6.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5zm11-11V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5z"
-          />
-          <path
-            fill-rule="evenodd"
-            d="M7.293 1.5a1 1 0 0 1 1.414 0l6.647 6.646a.5.5 0 0 1-.708.708L8 2.207 1.354 8.854a.5.5 0 1 1-.708-.708L7.293 1.5z"
-          />
-        </svg>
-      </RouterLink>
-
-      <RouterLink to="/busca" class="text-zinc-600 hover:text-zinc-300 transition-colors">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          fill="currentColor"
-          viewBox="0 0 16 16"
-        >
-          <path
-            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"
-          />
-        </svg>
-      </RouterLink>
-
-      <button
-        @click.prevent="isCreateModalOpen = true"
-        class="w-10 h-10 bg-zinc-100 text-black flex items-center justify-center hover:bg-red-700 hover:text-white transition-colors"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          fill="currentColor"
-          viewBox="0 0 16 16"
-        >
-          <path
-            d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
-          />
-        </svg>
-      </button>
-
-      <RouterLink to="/perfil" class="w-6 h-6 border border-zinc-800">
-        <img
-          :src="
-            authStore.user?.avatar
-              ? authStore.user.avatar.startsWith('http')
-                ? authStore.user.avatar
-                : storageBaseUrl + authStore.user.avatar
-              : 'https://ui-avatars.com/api/?name=' +
-                (authStore.user?.username || 'Guerreiro') +
-                '&background=18181b&color=ef4444&bold=true'
-          "
-          class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all"
-        />
-      </RouterLink>
-    </nav>
+    <!-- Navegação Mobile -->
+    <MobileNav v-if="!isAuthPage" />
 
     <!-- Modal Global -->
     <CreatePostModal

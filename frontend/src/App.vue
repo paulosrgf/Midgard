@@ -33,12 +33,9 @@ const handlePostSubmit = async (postData) => {
       formData.append('caption', postData.caption)
     }
 
-    // Configuração correta para envio de arquivos via multipart/form-data
-    await api.post('/posts', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+    // REMOVA o objeto de headers com 'Content-Type'.
+    // O Axios gera o boundary automaticamente quando recebe um FormData.
+    await api.post('/posts', formData)
 
     window.dispatchEvent(new CustomEvent('post-created'))
     isCreateModalOpen.value = false

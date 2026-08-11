@@ -53,6 +53,18 @@ class PostController extends Controller
     #[OA\Response(response: 201, description: "Saga forjada com sucesso")]
     public function store(Request $request)
     {
+        // Log para depurar no Render se o arquivo chegou no PHP
+        \Illuminate\Support\Facades\Log::info('Request data:', $request->all());
+        \Illuminate\Support\Facades\Log::info('Has file image?: ' . ($request->hasFile('image') ? 'SIM' : 'NAO'));
+
+        if (!$request->hasFile('image')) {
+            return response()->json([
+                'message' => 'O arquivo de imagem não foi detectado pelo servidor.',
+                'files_received' => $_FILES,
+                'all_input' => $request->all()
+            ], 422);
+        }
+
         $request->validate([
             'image' => 'required|image|max:20480',
             'caption' => 'nullable|string|max:255'

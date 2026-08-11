@@ -26,12 +26,10 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-    // FUNÇÃO DE ATUALIZAÇÃO DO PERFIL
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
+        $user = \App\Models\User::findOrFail($id);
 
-        // Trava de segurança: um usuário só pode editar a si mesmo
         if ($request->user()->id !== $user->id) {
             return response()->json(['error' => 'Acesso negado pelos deuses.'], 403);
         }
@@ -39,7 +37,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'sometimes|string|max:255',
             'username' => 'sometimes|string|max:255|unique:users,username,' . $user->id,
-            'avatar' => 'nullable|image|max:5120' // 5MB max
+            'avatar' => 'nullable|image|max:5120'
         ]);
 
         if ($request->has('name')) {
@@ -50,13 +48,23 @@ class UserController extends Controller
             $user->username = $request->username;
         }
 
-        // Lógica de upload do Avatar
+        // Lógica de upload do Avatar na Nuvem (Supabase S3)
         if ($request->hasFile('avatar')) {
-            // Apaga a foto antiga se existir
+            
+            // Apaga o avatar antigo do Supabase, se ele tiver um
             if ($user->avatar) {
-                Storage::disk('public')->delete($user->avatar);
+                $publicEndpoint = str_replace('/s3', '/object/public', env('SUPABASE_STORAGE_ENDPOINT'));
+                $bucketUrl = $publicEndpoint . '/' . env('SUPABASE_STORAGE_BUCKET') . '/';
+                $relativePath = str_replace($bucketUrl, '', $user->avatar);
+                \Illuminate\Support\Facades\Storage::disk('supabase')->delete($relativePath);
             }
-            $user->avatar = $request->file('avatar')->store('avatars', 'public');
+
+            // Salva o arquivo novo na pasta 'avatars'
+            $path = $request->file('avatar')->store('avatars', 'supabase');
+            
+            // Gera a URL pública para o frontend
+            $publicEndpoint = str_replace('/s3', '/object/public', env('SUPABASE_STORAGE_ENDPOINT'));
+            $user->avatar = $publicEndpoint . '/' . env('SUPABASE_STORAGE_BUCKET') . '/' . $path;
         }
 
         $user->save();

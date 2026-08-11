@@ -19,9 +19,10 @@ Route::post('/login', [AuthController::class, 'login']);
 // Rotas protegidas
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users/search', [\App\Http\Controllers\UserController::class, 'search']);
-    Route::post('/users/{id}', [\App\Http\Controllers\UserController::class, 'update']);
     Route::get('/users/{id}/posts', [\App\Http\Controllers\UserController::class, 'posts']);
     Route::get('/users/{id}', [\App\Http\Controllers\UserController::class, 'show']);
+    Route::put('/users/{id}', [\App\Http\Controllers\UserController::class, 'update']); // Apenas o PUT fica!
+    
     Route::get('/posts', [PostController::class, 'index']);
     Route::post('/posts', [PostController::class, 'store']);
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);
@@ -38,7 +39,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/highlights', [HighlightController::class, 'store']);
     Route::get('/highlights/{id}', [HighlightController::class, 'show']);
     
-
     Route::get('/user', function (Request $request) {
         return $request->user();
     });

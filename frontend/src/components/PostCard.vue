@@ -205,7 +205,12 @@ const deletePost = async () => {
       <!-- Lista de Comentários -->
       <div class="mt-2 space-y-1 max-h-32 overflow-y-auto">
         <p v-for="comment in commentsList" :key="comment.id" class="text-sm">
-          <span class="font-semibold mr-2 text-zinc-200">{{ comment.username }}</span>
+          <RouterLink
+            :to="'/u/' + comment.user_id"
+            class="font-semibold mr-2 text-zinc-200 hover:underline"
+          >
+            {{ comment.user?.username || comment.username || 'Guerreiro' }}
+          </RouterLink>
           <span class="text-zinc-400">{{ comment.body }}</span>
         </p>
       </div>

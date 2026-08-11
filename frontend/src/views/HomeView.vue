@@ -25,7 +25,18 @@ const fetchPosts = async () => {
 const fetchMundos = async () => {
   try {
     const response = await api.get('/stories')
-    mundos.value = response.data
+
+    // O backend manda uma lista plana.
+    // Nós agrupamos por 'user_id' aqui no JS para formar os "círculos" de mundos.
+    const groupedStories = {}
+    response.data.forEach((story) => {
+      if (!groupedStories[story.user_id]) {
+        groupedStories[story.user_id] = []
+      }
+      groupedStories[story.user_id].push(story)
+    })
+
+    mundos.value = groupedStories
   } catch (error) {
     console.error('Erro ao buscar mundos:', error)
   }

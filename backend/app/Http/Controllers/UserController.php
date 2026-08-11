@@ -76,4 +76,9 @@ class UserController extends Controller
 
         return response()->json($posts);
     }
+    public function show($id)
+    {
+        $user = \App\Models\User::findOrFail($id);
+        return response()->json($user);
+    }
 }

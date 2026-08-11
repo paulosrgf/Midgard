@@ -125,12 +125,13 @@ const deletePost = async () => {
     <!-- Mídia do Post (Bordas mais suaves) -->
     <div class="w-full rounded-md bg-zinc-950 border border-zinc-900 overflow-hidden shadow-lg">
       <img
-        :src="post.image.startsWith('http') ? post.image : storageBaseUrl + post.image"
+        :src="
+          post.image_path.startsWith('http') ? post.image_path : storageBaseUrl + post.image_path
+        "
         alt="Saga"
         class="w-full h-auto object-cover aspect-[4/5] md:aspect-[9/16]"
       />
     </div>
-
     <!-- O resto do seu arquivo (botões de like, comentários) continua igual abaixo... -->
 
     <!-- Ações (Like, Comment) -->

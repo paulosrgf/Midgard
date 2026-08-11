@@ -44,22 +44,24 @@ class PostController extends Controller
     // Função que SALVA um novo post (POST)
     public function store(Request $request)
     {
-        // 1. Valida se realmente veio uma imagem
+        // 1. Valida se a imagem realmente chegou
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:51200', // max 5MB
-            'caption' => 'nullable|string'
+            'image' => 'required|image|max:20480', // Máximo 20MB
+            'caption' => 'nullable|string|max:255'
         ]);
 
-        // 2. Salva a imagem fisicamente na pasta 'storage/app/public/posts'
-        $imagePath = $request->file('image')->store('posts', 'public');
+        // 2. Salva o arquivo fisicamente na pasta storage/app/public/posts
+        $path = $request->file('image')->store('posts', 'public');
 
-        // 3. Cria o registro no banco de dados, amarrado ao usuário que enviou o token!
-        $post = $request->user()->posts()->create([
-            'image_path' => $imagePath,
-            'caption' => $request->caption,
-        ]);
+        // 3. Salva no banco de dados com os nomes EXATOS das colunas
+        $post = new \App\Models\Post();
+        $post->user_id = $request->user()->id;
+        $post->image_path = $path; // Aqui é onde o erro estava acontecendo!
+        $post->caption = $request->caption;
+        $post->save();
 
-        return response()->json(['message' => 'Post criado com sucesso!', 'post' => $post], 201);
+        // 4. Retorna o post recém-criado já empacotado com o Autor para o Vue não quebrar
+        return response()->json($post->load('author'), 201);
     }
     public function destroy(Request $request, $id)
     {

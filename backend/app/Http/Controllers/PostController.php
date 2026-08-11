@@ -4,31 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
     // Função que DEVOLVE os posts para o Feed (GET)
     public function index(Request $request)
     {
-        // 1. Trocado 'user' por 'author' para alinhar com o banco e o Vue
         $posts = Post::with(['author', 'likes', 'comments.user'])->latest()->get();
         $currentUserId = $request->user() ? $request->user()->id : null;
 
         $formattedPosts = $posts->map(function ($post) use ($currentUserId) {
-            // 2. Trocado $post->user por $post->author
             $authorName = $post->author ? ($post->author->name ?? $post->author->username) : 'Guerreiro Caído';
-            
-            // Passamos null se não tiver foto para o Vue gerar o Avatar Inteligente
             $authorAvatar = $post->author->avatar ?? null; 
 
             return [
                 'id' => $post->id,
                 'author' => [
-                    'id' => $post->author ? $post->author->id : null, // ID é obrigatório para clicar e ir pro perfil
+                    'id' => $post->author ? $post->author->id : null,
                     'username' => $authorName,
                     'avatar' => $authorAvatar,
                 ],
-                'image_path' => $post->image_path, // Agora enviamos 'image_path' diretamente, que é o que o Vue procura
+                'image_path' => $post->image_path,
                 'likes' => $post->likes ? $post->likes->count() : 0,
                 'isLiked' => $currentUserId && $post->likes ? $post->likes->contains('user_id', $currentUserId) : false,
                 'caption' => $post->caption,
@@ -53,11 +50,16 @@ class PostController extends Controller
             'caption' => 'nullable|string|max:255'
         ]);
 
-        $path = $request->file('image')->store('posts', 'public');
+        // 1. Salva o arquivo no Supabase (pasta 'posts')
+        $path = $request->file('image')->store('posts', 'supabase');
+
+        // 2. Monta a URL completa pública para salvar no banco
+        $bucketUrl = env('SUPABASE_STORAGE_ENDPOINT') . '/' . env('SUPABASE_STORAGE_BUCKET');
+        $fullUrl = $bucketUrl . '/' . $path;
 
         $post = new \App\Models\Post();
         $post->user_id = $request->user()->id;
-        $post->image_path = $path; 
+        $post->image_path = $fullUrl; // Salva a URL pronta para o Vue ler
         $post->caption = $request->caption;
         $post->save();
 
@@ -73,8 +75,13 @@ class PostController extends Controller
             return response()->json(['message' => 'Ação não autorizada.'], 403);
         }
 
+        // Deleta a imagem do Supabase
         if ($post->image_path) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($post->image_path);
+            $bucketUrl = env('SUPABASE_STORAGE_ENDPOINT') . '/' . env('SUPABASE_STORAGE_BUCKET') . '/';
+            // Pega apenas o final do caminho (ex: posts/foto.png) para o comando delete funcionar
+            $relativePath = str_replace($bucketUrl, '', $post->image_path);
+            
+            Storage::disk('supabase')->delete($relativePath);
         }
 
         $post->delete();

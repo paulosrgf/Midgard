@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
-import PostCard from '../components/PostCard.vue'
 
 const route = useRoute()
 const user = ref(null)
@@ -55,11 +54,13 @@ onMounted(() => {
           <div
             class="w-32 h-32 bg-zinc-950 border-4 border-zinc-900 relative z-10 overflow-hidden rounded-xl shadow-lg"
           >
-            <!-- AVATAR INTELIGENTE -->
+            <!-- AVATAR CORRIGIDO PARA O SUPABASE S3 -->
             <img
               :src="
                 user.avatar
-                  ? storageBaseUrl + user.avatar
+                  ? user.avatar.startsWith('http')
+                    ? user.avatar
+                    : storageBaseUrl + user.avatar
                   : 'https://ui-avatars.com/api/?name=' +
                     user.username +
                     '&background=18181b&color=ef4444&size=200&bold=true'
@@ -78,11 +79,24 @@ onMounted(() => {
           {{ user.name || user.username }}
         </h1>
         <p class="font-sans text-sm text-zinc-500">@{{ user.username }}</p>
+
+        <div class="flex gap-8 mt-8 pt-6 border-t border-zinc-900">
+          <div class="flex flex-col text-center">
+            <span class="font-serif text-2xl text-zinc-100">{{ posts.length }}</span>
+            <span class="font-sans text-[10px] uppercase tracking-widest text-zinc-600 mt-1"
+              >Sagas</span
+            >
+          </div>
+        </div>
       </div>
 
+      <!-- GRADE DE SAGAS ESTILO INSTAGRAM (3x3) -->
       <div class="w-full bg-black">
-        <div class="border-y border-zinc-900 p-4 text-center">
-          <span class="font-serif text-lg tracking-widest uppercase text-zinc-300">Sagas</span>
+        <div class="border-y border-zinc-900 p-4 flex justify-center gap-12">
+          <span
+            class="font-serif text-xs tracking-widest uppercase text-white border-b border-white pb-1 cursor-pointer"
+            >Grade</span
+          >
         </div>
 
         <div
@@ -92,13 +106,24 @@ onMounted(() => {
           A lenda deste guerreiro ainda não começou.
         </div>
 
-        <div v-else class="flex flex-col gap-px bg-zinc-900">
-          <PostCard
+        <div v-else class="grid grid-cols-3 gap-1 bg-black">
+          <div
             v-for="post in posts"
             :key="post.id"
-            :post="post"
-            class="bg-black rounded-none"
-          />
+            class="aspect-square bg-zinc-900 relative group cursor-pointer overflow-hidden border border-zinc-900"
+          >
+            <img
+              :src="
+                post.image_path
+                  ? post.image_path.startsWith('http')
+                    ? post.image_path
+                    : storageBaseUrl + post.image_path
+                  : ''
+              "
+              class="w-full h-full object-cover group-hover:opacity-70 transition-opacity duration-300"
+              alt="Saga"
+            />
+          </div>
         </div>
       </div>
     </div>

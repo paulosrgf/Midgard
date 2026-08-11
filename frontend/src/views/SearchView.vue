@@ -21,7 +21,8 @@ const searchUsers = async () => {
 }
 
 const goToUser = (id) => {
-  router.push(`/user/${id}`)
+  // Correção: A rota correta é /u/ e não /user/
+  router.push(`/u/${id}`)
 }
 </script>
 
@@ -80,13 +81,16 @@ const goToUser = (id) => {
         @click="goToUser(user.id)"
         class="flex items-center gap-4 p-4 border border-zinc-900 hover:border-zinc-700 bg-zinc-950/50 cursor-pointer transition-colors group"
       >
+        <!-- Correção: Verificando se a imagem já vem com o link do Supabase -->
         <img
           :src="
             user.avatar
-              ? storageBaseUrl + user.avatar
+              ? user.avatar.startsWith('http')
+                ? user.avatar
+                : storageBaseUrl + user.avatar
               : 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&fit=crop'
           "
-          class="w-12 h-12 grayscale object-cover group-hover:grayscale-0 transition-all"
+          class="w-12 h-12 grayscale object-cover group-hover:grayscale-0 transition-all rounded-full"
         />
         <div>
           <span

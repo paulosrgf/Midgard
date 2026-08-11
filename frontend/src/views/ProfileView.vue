@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
-import PostCard from '../components/PostCard.vue'
 
 const authStore = useAuthStore()
 const posts = ref([])
@@ -54,7 +53,7 @@ const saveProfile = async () => {
     authStore.setUser(response.data)
     isEditing.value = false
 
-    // Recarrega os posts para atualizar a foto da bolinha, se necessário
+    // Recarrega os posts
     fetchMyPosts()
   } catch (error) {
     console.error('Erro ao salvar perfil', error)
@@ -157,12 +156,15 @@ onMounted(() => {
           <div
             class="w-32 h-32 bg-black border-4 border-zinc-900 relative z-10 overflow-hidden rounded-xl shadow-lg"
           >
+            <!-- Correção: Verificando a string do avatar do usuário logado -->
             <img
               :src="
                 authStore.user?.avatar
-                  ? storageBaseUrl + authStore.user.avatar
+                  ? authStore.user.avatar.startsWith('http')
+                    ? authStore.user.avatar
+                    : storageBaseUrl + authStore.user.avatar
                   : 'https://ui-avatars.com/api/?name=' +
-                    authStore.user?.username +
+                    (authStore.user?.username || 'Guerreiro') +
                     '&background=18181b&color=ef4444&size=200&bold=true'
               "
               class="w-full h-full object-cover"
@@ -191,10 +193,12 @@ onMounted(() => {
         </div>
       </div>
 
+      <!-- NOVA ÁREA DE SAGAS: GRID ESTILO INSTAGRAM -->
       <div class="w-full bg-black">
-        <div class="border-y border-zinc-900 p-4 text-center">
-          <span class="font-serif text-lg tracking-widest uppercase text-zinc-300"
-            >Minhas Sagas</span
+        <div class="border-y border-zinc-900 p-4 flex justify-center gap-12">
+          <span
+            class="font-serif text-xs tracking-widest uppercase text-white border-b border-white pb-1 cursor-pointer"
+            >Grade</span
           >
         </div>
 
@@ -205,14 +209,25 @@ onMounted(() => {
           Sua espada ainda está limpa. Nenhuma saga registrada.
         </div>
 
-        <div v-else class="flex flex-col gap-px bg-zinc-900">
-          <PostCard
+        <!-- Mosaico 3x3 -->
+        <div v-else class="grid grid-cols-3 gap-1 bg-black">
+          <div
             v-for="post in posts"
             :key="post.id"
-            :post="post"
-            @deleted="fetchMyPosts"
-            class="bg-black rounded-none"
-          />
+            class="aspect-square bg-zinc-900 relative group cursor-pointer overflow-hidden border border-zinc-900"
+          >
+            <img
+              :src="
+                post.image_path
+                  ? post.image_path.startsWith('http')
+                    ? post.image_path
+                    : storageBaseUrl + post.image_path
+                  : ''
+              "
+              class="w-full h-full object-cover group-hover:opacity-70 transition-opacity duration-300"
+              alt="Saga"
+            />
+          </div>
         </div>
       </div>
     </div>
